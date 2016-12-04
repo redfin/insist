@@ -16,7 +16,116 @@
 
 package com.redfin.insist;
 
+import com.redfin.validity.DefaultValidityFailedValidationExecutor;
+import com.redfin.validity.FailedValidationExecutor;
+import com.redfin.validity.ValidityUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 final class StackTrimmingFailedValidationExecutorTest {
 
-    // todo
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Test values & contract implementations
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    private interface ValidationExecutorsMessageContract<X extends Throwable> extends FailedValidationExecutorContract<X> {
+
+        String MESSAGE_FORMAT = "%s\n    expected : %s\n     subject : <%s>";
+
+        @Test
+        default void testThrownExceptionHasExpectedMessage() {
+            String expected = "expected";
+            String subject = "subject";
+            String message = "message";
+            X throwable = Assertions.assertThrows(getThrowableClass(),
+                                                  () -> getFailedValidationExecutor().fail(expected, subject, message));
+            Assertions.assertEquals(String.format(MESSAGE_FORMAT,
+                                                  message,
+                                                  expected,
+                                                  subject),
+                                    throwable.getMessage(),
+                                    "The failed validation executors for the validity library should have the expected message.");
+        }
+
+        @Test
+        default void testThrownExceptionHasExpectedMessageWithNullMessage() {
+            String expected = "expected";
+            String subject = "subject";
+            X throwable = Assertions.expectThrows(getThrowableClass(),
+                                                  () -> getFailedValidationExecutor().fail(expected, subject, null));
+            Assertions.assertEquals(String.format(MESSAGE_FORMAT,
+                                                  "Subject failed validation",
+                                                  expected,
+                                                  subject),
+                                    throwable.getMessage(),
+                                    "The failed validation executors for the validity library should have the expected message.");
+        }
+    }
+
+    private interface NoStackTraceValidationExecutorsContract<X extends Throwable> extends ValidationExecutorsMessageContract<X> {
+
+        final class NoStackRuntimeException extends RuntimeException {
+            NoStackRuntimeException(String message) {
+                super(message);
+            }
+
+            @Override
+            public StackTraceElement[] getStackTrace() {
+                return null;
+            }
+        }
+
+        FailedValidationExecutor<NoStackRuntimeException> getNoStackFailedValidationExecutor();
+
+        @Test
+        default void testValidationExecutorCanHandleEmptyStackTraceFromException() {
+            String expected = "expected";
+            String subject = "subject";
+            String message = "message";
+            Assertions.assertThrows(NoStackRuntimeException.class,
+                                    () -> getNoStackFailedValidationExecutor().fail(expected, subject, message));
+        }
+    }
+
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Test containers
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    @Nested
+    final class StackTrimmingFailedValidationExecutorTestContainer implements NoStackTraceValidationExecutorsContract<IllegalStateException> {
+
+        @Override
+        public FailedValidationExecutor<IllegalStateException> getFailedValidationExecutor() {
+            return new DefaultValidityFailedValidationExecutor<>(IllegalStateException::new);
+        }
+
+        @Override
+        public Class<IllegalStateException> getThrowableClass() {
+            return IllegalStateException.class;
+        }
+
+        @Override
+        public FailedValidationExecutor<NoStackRuntimeException> getNoStackFailedValidationExecutor() {
+            return new DefaultValidityFailedValidationExecutor<>(NoStackRuntimeException::new);
+        }
+
+        @Test
+        void throwsExceptionForNullThrowableFunction() {
+            NullPointerException exception = Assertions.expectThrows(NullPointerException.class,
+                                                                     () -> new DefaultValidityFailedValidationExecutor<>(null));
+            Assertions.assertEquals(ValidityUtils.nullArgumentMessage("throwableFunction"),
+                                    exception.getMessage(),
+                                    "Failed validation executors should throw an exception for a null throwable function.");
+        }
+
+        @Test
+        void testFailedValidationExecutorThrowsExceptionForNullThrowableCreation() {
+            NullPointerException exception = Assertions.expectThrows(NullPointerException.class,
+                                                                     () -> new DefaultValidityFailedValidationExecutor<>(str -> null).fail("", "", ""));
+            Assertions.assertEquals(ValidityUtils.nullThrowableFromFunction(),
+                                    exception.getMessage(),
+                                    "Failed validation executors should throw the expected exception for a null throwable created.");
+        }
+    }
 }

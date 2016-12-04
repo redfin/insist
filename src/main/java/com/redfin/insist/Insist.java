@@ -17,7 +17,13 @@
 package com.redfin.insist;
 
 /**
- * todo
+ * A static class used as the entry point in using the Insist library.
+ * <p>
+ * To make an assertion, use either the {@link #assertion()} or
+ * {@link #assertion(String)} methods.
+ * <p>
+ * To make an assertion, use either the {@link #assumption()} or
+ * {@link #assumption(String)} methods.
  */
 public final class Insist {
 
@@ -39,20 +45,17 @@ public final class Insist {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
-     * todo
-     *
-     * @return
+     * @return an {@link AssertionFactory} instance with the default message prefix.
      */
     public static AssertionFactory assertion() {
         return NO_MESSAGE_ASSERTION_FACTORY;
     }
 
     /**
-     * todo
+     * @param message the String message prefix used on assertion failure.
+     *                If null, the default message prefix will be used.
      *
-     * @param message
-     *
-     * @return
+     * @return an {@link AssertionFactory} instance with the given message prefix.
      */
     public static AssertionFactory assertion(String message) {
         if (null == message) {
@@ -62,20 +65,17 @@ public final class Insist {
     }
 
     /**
-     * todo
-     *
-     * @return
+     * @return an {@link AssumptionFactory} instance with the default message prefix.
      */
     public static AssumptionFactory assumption() {
         return NO_MESSAGE_ASSUMPTION_FACTORY;
     }
 
     /**
-     * todo
+     * @param message the String message prefix used on assumption failure.
+     *                If null, the default message prefix will be used.
      *
-     * @param message
-     *
-     * @return
+     * @return an {@link AssumptionFactory} instance with the given message prefix.
      */
     public static AssumptionFactory assumption(String message) {
         if (null == message) {

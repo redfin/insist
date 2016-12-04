@@ -16,7 +16,41 @@
 
 package com.redfin.insist;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
+
 final class AssertionFactoryTest {
 
-    // todo
+    @Test
+    void testAssertionFactoryCanBeInstantiated() {
+        Assertions.assertNotNull(new AssertionFactory("hello"),
+                                 "Should be able to instantiate an AssertionFactory with a message prefix");
+    }
+
+    @Test
+    void testAssertionFactoryCanBeInstantiatedWithNullMessage() {
+        Assertions.assertNotNull(new AssertionFactory(null),
+                                 "Should be able to instantiate an AssertionFactory with a null message prefix");
+    }
+
+    @Test
+    void testAssertionFactoryThrowablesAreAssertionFailedErrors() {
+        String prefix = "hello";
+        AssertionFactory factory = new AssertionFactory(prefix);
+        Assertions.assertThrows(AssertionFailedError.class,
+                                () -> factory.that(true).isFalse());
+    }
+
+    @Test
+    void testAssertionFactoryThrowablesContainGivenMessagePrefix() {
+        String prefix = "hello";
+        AssertionFactory factory = new AssertionFactory(prefix);
+        AssertionFailedError error = Assertions.assertThrows(AssertionFailedError.class,
+                                                             () -> factory.that(true).isFalse());
+        Assertions.assertNotNull(error.getMessage(),
+                                 "Errors from an AssertionFactory should not have a null message");
+        Assertions.assertTrue(error.getMessage().contains(prefix),
+                              "Errors from an AssertionFactory should contain the given message prefix");
+    }
 }

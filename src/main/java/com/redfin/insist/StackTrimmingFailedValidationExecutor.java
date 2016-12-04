@@ -23,7 +23,11 @@ import com.redfin.validity.ValidityUtils;
 import java.util.function.Function;
 
 /**
- * todo
+ * An implementation of {@link FailedValidationExecutor} that will remove all stack frames
+ * from the generated {@link Throwable} except for the actual line that called for validation.
+ * This is intended for use with Assertions and Assumptions that will be used in actual test methods
+ * where the extended stack frame is noisy and not helpful. It should not be used in frameworks or
+ * production code where the stack trace is essential for debugging.
  */
 public final class StackTrimmingFailedValidationExecutor<X extends Throwable> implements FailedValidationExecutor<X> {
 
@@ -46,9 +50,14 @@ public final class StackTrimmingFailedValidationExecutor<X extends Throwable> im
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
-     * todo
+     * Create a new instance of a {@link StackTrimmingFailedValidationExecutor} that
+     * will use the given throwableFunction when the {@link #fail(String, Object, String)}
+     * method is called.
      *
-     * @param throwableFunction
+     * @param throwableFunction the {@link Function} that takes in a String and returns a
+     *                          Throwable of type X.
+     *                          May not be null.
+     *                          Should never return a null Throwable.
      *
      * @throws IllegalArgumentException if throwableFunction is null.
      */

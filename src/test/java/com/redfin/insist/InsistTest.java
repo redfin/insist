@@ -16,7 +16,52 @@
 
 package com.redfin.insist;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+
 final class InsistTest {
 
-    // todo
+    @Test
+    void testNonInstantiableClassHasOnlyOneConstructor() {
+        Assertions.assertEquals(1,
+                                Insist.class.getDeclaredConstructors().length,
+                                "Insist should only have 1 constructor.");
+    }
+
+    @Test
+    void testNonInstantiableClassHasOnlySingleArgumentConstructor() throws NoSuchMethodException {
+        Assertions.assertNotNull(Insist.class.getDeclaredConstructor(),
+                                 "Insist should only have the no argument constructor.");
+    }
+
+    @Test
+    void testNonInstantiableClassSingleConstructorIsPrivate() throws NoSuchMethodException {
+        Assertions.assertTrue(Modifier.isPrivate(Insist.class.getDeclaredConstructor().getModifiers()),
+                              "Insist should only have a private constructor.");
+    }
+
+    @Test
+    void testNonInstantiableClassThrowsErrorIfConstructorIsCalled() {
+        AssertionError error = Assertions.assertThrows(AssertionError.class,
+                                                       () -> {
+                                                           try {
+                                                               Constructor<Insist> constructor = Insist.class.getDeclaredConstructor();
+                                                               constructor.setAccessible(true);
+                                                               constructor.newInstance();
+                                                           } catch (Throwable thrown) {
+                                                               // A constructor error is wrapped, unwrap it
+                                                               if (thrown instanceof InvocationTargetException) {
+                                                                   throw thrown.getCause();
+                                                               }
+                                                               throw thrown;
+                                                           }
+                                                       });
+        Assertions.assertEquals("Cannot instantiate the static class Insist",
+                                error.getMessage(),
+                                "Insist should throw the expected error if the construct is called");
+    }
 }
