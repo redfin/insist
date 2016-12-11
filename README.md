@@ -18,7 +18,7 @@ To install, you can simply include the dependency from Maven Central:
 <dependency>
     <groupId>com.redfin</groupId>
     <artifactId>insist</artifactId>
-    <version>0.2.0-beta</version>
+    <version>0.3.0-beta</version>
 </dependency>
 ```
 

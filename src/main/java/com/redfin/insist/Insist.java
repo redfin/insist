@@ -16,6 +16,12 @@
 
 package com.redfin.insist;
 
+import org.opentest4j.AssertionFailedError;
+import org.opentest4j.TestAbortedException;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 /**
  * A static class used as the entry point in using the Insist library.
  * <p>
@@ -31,62 +37,74 @@ public final class Insist {
     // Constants
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    private static final BiFunction<String, Throwable, AssertionFailedError> ASSERT_BI_FUNCTION = AssertionFailedError::new;
+    private static final BiFunction<String, Throwable, TestAbortedException> ASSUME_BI_FUNCTION = TestAbortedException::new;
+    private static final StackTrimmingFailedValidationExecutor<AssertionFailedError> ASSERT_EXECUTOR = new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new);
+    private static final StackTrimmingFailedValidationExecutor<TestAbortedException> ASSUME_EXECUTOR = new StackTrimmingFailedValidationExecutor<>(TestAbortedException::new);
+
     /*
-     * Cache a re-usable instance without a custom message prefix for improved
-     * performance. When a custom message is desired a new instance is
-     * required.
+     * The null message instances of the factories can be re-used safely. Cache them
+     * for better performance. A custom message will require a new instance, though.
      */
 
-    private static final AssertionFactory NO_MESSAGE_ASSERTION_FACTORY = new AssertionFactory(null);
-    private static final AssumptionFactory NO_MESSAGE_ASSUMPTION_FACTORY = new AssumptionFactory(null);
+    private static final InsistVerifiableFactory<AssertionFailedError> ASSERT_FACTORY = new InsistVerifiableFactory<>(null, ASSERT_BI_FUNCTION, ASSERT_EXECUTOR);
+    private static final InsistVerifiableFactory<TestAbortedException> ASSUME_FACTORY = new InsistVerifiableFactory<>(null, ASSUME_BI_FUNCTION, ASSUME_EXECUTOR);
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Static Methods
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
-     * @return an {@link AssertionFactory} instance with the default message prefix.
+     * @return an {@link InsistVerifiableFactory} instance with the default message prefix that
+     * throws an {@link AssertionFailedError} on validation failure.
      */
-    public static AssertionFactory assertion() {
-        return NO_MESSAGE_ASSERTION_FACTORY;
+    public static InsistVerifiableFactory<AssertionFailedError> assertion() {
+        return assertion(null);
     }
 
     /**
      * @param message the String message prefix used on assertion failure.
      *                If null, the default message prefix will be used.
      *
-     * @return an {@link AssertionFactory} instance with the given message prefix.
+     * @return an {@link InsistVerifiableFactory} instance with the given message prefix that
+     * throws an {@link AssertionFailedError} on validation failure.
      */
-    public static AssertionFactory assertion(String message) {
+    public static InsistVerifiableFactory<AssertionFailedError> assertion(String message) {
         if (null == message) {
-            return NO_MESSAGE_ASSERTION_FACTORY;
+            return ASSERT_FACTORY;
         }
-        return new AssertionFactory(message);
+        return new InsistVerifiableFactory<>(message, ASSERT_BI_FUNCTION, ASSERT_EXECUTOR);
     }
 
     /**
-     * @return an {@link AssumptionFactory} instance with the default message prefix.
+     * @return an {@link InsistVerifiableFactory} instance with the default message prefix that
+     * throws a {@link TestAbortedException} on validation failure.
      */
-    public static AssumptionFactory assumption() {
-        return NO_MESSAGE_ASSUMPTION_FACTORY;
+    public static InsistVerifiableFactory<TestAbortedException> assumption() {
+        return assumption(null);
     }
 
     /**
      * @param message the String message prefix used on assumption failure.
      *                If null, the default message prefix will be used.
      *
-     * @return an {@link AssumptionFactory} instance with the given message prefix.
+     * @return an {@link InsistVerifiableFactory} instance with the given message prefix that
+     * throws a {@link TestAbortedException} on validation failure.
      */
-    public static AssumptionFactory assumption(String message) {
+    public static InsistVerifiableFactory<TestAbortedException> assumption(String message) {
         if (null == message) {
-            return NO_MESSAGE_ASSUMPTION_FACTORY;
+            return ASSUME_FACTORY;
         }
-        return new AssumptionFactory(message);
+        return new InsistVerifiableFactory<>(message, ASSUME_BI_FUNCTION, ASSUME_EXECUTOR);
     }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Instance Methods
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    /*
+     * Ensure this class is not instantiable, even through reflection.
+     */
 
     private Insist() {
         throw new AssertionError("Cannot instantiate the static class Insist");

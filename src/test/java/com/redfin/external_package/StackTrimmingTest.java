@@ -16,8 +16,7 @@
 
 package com.redfin.external_package;
 
-import com.redfin.insist.StackTrimmingFailedValidationExecutor;
-import com.redfin.validity.FailedValidationExecutor;
+import com.redfin.insist.Insist;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -30,12 +29,6 @@ import org.opentest4j.AssertionFailedError;
  */
 
 final class StackTrimmingTest {
-
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Test values
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    private static final FailedValidationExecutor<AssertionFailedError> FVE = new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new);
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Test cases
@@ -55,7 +48,7 @@ final class StackTrimmingTest {
         Assumptions.assumeTrue(null != exception.getStackTrace() && exception.getStackTrace().length > 0,
                                "This test can only work if the JVM is filling in stack traces.");
         AssertionError thrown = Assertions.assertThrows(AssertionFailedError.class,
-                                                        () -> FVE.fail("expected", "subject", "message"));
+                                                        () -> Insist.assertion().that(true).isFalse());
         int firstLineNumber = exception.getStackTrace()[0].getLineNumber();
         Assertions.assertTrue(null != thrown.getStackTrace() && thrown.getStackTrace().length > 0,
                               "If the JVM is filling in stack traces the thrown exception should have a stack trace.");
