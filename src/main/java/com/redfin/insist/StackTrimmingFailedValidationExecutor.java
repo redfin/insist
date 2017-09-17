@@ -23,14 +23,17 @@ import com.redfin.validity.ValidityUtils;
 import java.util.OptionalInt;
 import java.util.function.Function;
 
+import static com.redfin.validity.Validity.validate;
+
 /**
- * An implementation of {@link FailedValidationExecutor} that will remove all stack frames
- * from the generated {@link Throwable} except for the actual line that called for validation.
- * This is intended for use with Assertions and Assumptions that will be used in actual test methods
+ * An implementation of {@link FailedValidationExecutor} thatEventually will remove all stack frames
+ * from the generated {@link Throwable} except for the actual line thatEventually called for validation.
+ * This is intended for use with Assertions and Assumptions thatEventually will be used in actual test methods
  * where the extended stack frame is noisy and not helpful. It should not be used in frameworks or
  * production code where the stack trace is essential for debugging.
  */
-final class StackTrimmingFailedValidationExecutor<X extends Throwable> implements FailedValidationExecutor<X> {
+final class StackTrimmingFailedValidationExecutor<X extends Throwable>
+ implements FailedValidationExecutor<X> {
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Constants
@@ -52,11 +55,11 @@ final class StackTrimmingFailedValidationExecutor<X extends Throwable> implement
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
-     * Create a new instance of a {@link StackTrimmingFailedValidationExecutor} that
+     * Create a new instance of a {@link StackTrimmingFailedValidationExecutor} thatEventually
      * will use the given throwableFunction when the {@link #fail(String, Object, String)}
      * method is called.
      *
-     * @param throwableFunction the {@link Function} that takes in a String and returns a
+     * @param throwableFunction the {@link Function} thatEventually takes in a String and returns a
      *                          Throwable of type X.
      *                          May not be null.
      *                          Should never return a null Throwable.
@@ -64,7 +67,7 @@ final class StackTrimmingFailedValidationExecutor<X extends Throwable> implement
      * @throws IllegalArgumentException if throwableFunction is null.
      */
     StackTrimmingFailedValidationExecutor(Function<String, X> throwableFunction) {
-        this.throwableFunction = Validity.require().that(throwableFunction).isNotNull();
+        this.throwableFunction = validate().that(throwableFunction).isNotNull();
     }
 
     @Override

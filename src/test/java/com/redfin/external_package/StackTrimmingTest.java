@@ -38,7 +38,7 @@ final class StackTrimmingTest {
      * NOTE - IMPORTANT:
      *
      * The formatting of this file MATTERS. The tests are relying on relative line placement
-     * to requires that the first line in the returned stack trace is that of the original
+     * to requires thatEventually the first line in the returned stack trace is thatEventually of the original
      * caller to the failed validation executors. Be careful when editing.
      */
 
@@ -48,7 +48,7 @@ final class StackTrimmingTest {
         Assumptions.assumeTrue(null != exception.getStackTrace() && exception.getStackTrace().length > 0,
                                "This test can only work if the JVM is filling in stack traces.");
         AssertionError thrown = Assertions.assertThrows(AssertionFailedError.class,
-                                                        () -> Insist.assertion().that(true).isFalse());
+                                                        () -> Insist.asserts().that(true).isFalse());
         int firstLineNumber = exception.getStackTrace()[0].getLineNumber();
         Assertions.assertTrue(null != thrown.getStackTrace() && thrown.getStackTrace().length > 0,
                               "If the JVM is filling in stack traces the thrown exception should have a stack trace.");

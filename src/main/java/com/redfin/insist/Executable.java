@@ -16,23 +16,17 @@
 
 package com.redfin.insist;
 
-import java.time.Duration;
-
 /**
- * An InsistCompletableFuture represents the final mid point in patient
- * validation for waiting until a true result is returned.
- *
- * @param <X> the type of Throwable thrown if validation never succeeds.
+ * A functional interface that defines a block of code that executes without
+ * returning a value and can throw any type of throwable.
  */
-public interface InsistCompletableFuture<X extends Throwable>
-         extends InsistFuture<X> {
+@FunctionalInterface
+public interface Executable<X extends Throwable> {
 
     /**
-     * @param timeout the maximum {@link Duration} to wait for successful validation.
+     * Run the given block of code.
      *
-     * @return an {@link InsistFuture} with the given timeout characteristics.
-     *
-     * @throws IllegalArgumentException if timeout is null or negative.
+     * @throws X if the given block of code throws it.
      */
-    InsistFuture<X> within(Duration timeout);
+    void execute() throws X;
 }

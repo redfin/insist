@@ -18,7 +18,47 @@ package com.redfin.insist;
 
 import java.util.function.BooleanSupplier;
 
+/**
+ * An InsistFuture represents the final type in patient
+ * validation for waiting until a true result is returned.
+ *
+ * @param <X> the type of Throwable thrown if validation never succeeds.
+ */
 public interface InsistFuture<X extends Throwable> {
 
-    void that(BooleanSupplier supplier) throws X;
+    /**
+     * Repeatedly call the boolean supplier at the rate of the set wait
+     * for this instance. If the supplier returns true, then exit normally.
+     * If true is never received from the supplier within the set timeout
+     * for this instance, then throw a throwable of type X.
+     *
+     * @param supplier the supplier of boolean values for validation attempts.
+     *                 May not be null.
+     *
+     * @throws X                        if the supplier never supplies a true
+     *                                  value within the given timeout period.
+     * @throws IllegalArgumentException if supplier is null.
+     */
+    void thatEventually(BooleanSupplier supplier) throws X;
+
+    /**
+     * Repeatedly call the executable at the rate of the set wait
+     * for this instance. If the executable throws a throwable of type T,
+     * then exit normally. If a different type of throwable is thrown, it will
+     * be ignored. If no throwable of type T is thrown within the set timeout,
+     * then throw a throwable of type X.
+     *
+     * @param expectedThrowableClass the class of throwable that is expected.
+     *                               May not be null.
+     * @param executable             the executable to be repeatedly called.
+     *                               May not be null.
+     * @param <T>                    the type of expectedThrowableClass.
+     *
+     * @return the throwable that was expected.
+     *
+     * @throws X                        the type to be thrown if expectedThrowableClass is never encountered.
+     * @throws IllegalArgumentException if expectedThrowableClass or executable are null.
+     */
+    <T extends Throwable> T thatEventuallyThrows(Class<T> expectedThrowableClass,
+                                                 Executable<T> executable) throws X;
 }

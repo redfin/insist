@@ -29,7 +29,7 @@ final class StackTrimmingFailedValidationExecutorTest {
     // Test values & contract implementations
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    private interface ValidationExecutorsMessageContract<X extends Throwable> extends FailedValidationExecutorContract<X> {
+    interface ValidationExecutorsMessageContract<X extends Throwable> extends FailedValidationExecutorContract<X> {
 
         String MESSAGE_FORMAT = "%s\n    expected : %s\n     subject : <%s>";
 
@@ -54,16 +54,19 @@ final class StackTrimmingFailedValidationExecutorTest {
             String subject = "subject";
             X throwable = Assertions.assertThrows(getThrowableClass(),
                                                   () -> getFailedValidationExecutor().fail(expected, subject, null));
-            Assertions.assertEquals(String.format(MESSAGE_FORMAT,
-                                                  "Subject failed validation",
-                                                  expected,
-                                                  subject),
-                                    throwable.getMessage(),
-                                    "The failed validation executors for the validity library should have the expected message.");
+            Assertions.assertTrue(null != throwable.getMessage() && throwable.getMessage().startsWith("Insistence failure"),
+                                  "Expected the thrown throwable for validation failure to start with the expected message.");
+        }
+
+        @Test
+        default void testFailedValidationExecutorThrowsForNullThrowable() {
+            FailedValidationExecutor<?> executor = new StackTrimmingFailedValidationExecutor<>(message -> null);
+            Assertions.assertThrows(NullPointerException.class,
+                                    () -> executor.fail("expected", "subject", "message"));
         }
     }
 
-    private interface NoStackTraceValidationExecutorsContract<X extends Throwable> extends ValidationExecutorsMessageContract<X> {
+    interface NoStackTraceValidationExecutorsContract<X extends Throwable> extends ValidationExecutorsMessageContract<X> {
 
         final class NoStackRuntimeException extends RuntimeException {
             NoStackRuntimeException(String message) {
@@ -97,7 +100,7 @@ final class StackTrimmingFailedValidationExecutorTest {
 
         @Override
         public FailedValidationExecutor<IllegalStateException> getFailedValidationExecutor() {
-            return new DefaultValidityFailedValidationExecutor<>(IllegalStateException::new);
+            return new StackTrimmingFailedValidationExecutor<>(IllegalStateException::new);
         }
 
         @Override
@@ -107,7 +110,7 @@ final class StackTrimmingFailedValidationExecutorTest {
 
         @Override
         public FailedValidationExecutor<NoStackRuntimeException> getNoStackFailedValidationExecutor() {
-            return new DefaultValidityFailedValidationExecutor<>(NoStackRuntimeException::new);
+            return new StackTrimmingFailedValidationExecutor<>(NoStackRuntimeException::new);
         }
 
         @Test

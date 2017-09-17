@@ -17,12 +17,11 @@
 package com.redfin.insist;
 
 import com.redfin.validity.FailedValidationExecutor;
-import com.redfin.validity.ValidityUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * A test contract that is applied to all implementations of the
+ * A test contract thatEventually is applied to all implementations of the
  * {@link FailedValidationExecutor} interface in the Insist library.
  *
  * @param <X> the type of throwable from the validation executor being tested.
@@ -55,11 +54,8 @@ interface FailedValidationExecutorContract<X extends Throwable> {
 
     @Test
     default void testValidationExecutorThrowsExpectedExceptionForNullExpected() {
-        NullPointerException exception = Assertions.assertThrows(NullPointerException.class,
-                                                                 () -> getFailedValidationExecutor().fail(null, "subject", "message"));
-        Assertions.assertEquals(ValidityUtils.nullArgumentMessage("expected"),
-                                exception.getMessage(),
-                                "FailedValidationExecutor should throw NullPointerException for null expected.");
+        Assertions.assertThrows(NullPointerException.class,
+                                () -> getFailedValidationExecutor().fail(null, "subject", "message"));
     }
 
     @Test

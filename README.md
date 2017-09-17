@@ -5,8 +5,10 @@
 
 ## What is Insist?
 
-Insist is an extension of the validation library [Validity](https://github.com/redfin/validity).
+Insist is an assertion library.
+It is an extension of the validation library [Validity](https://github.com/redfin/validity).
 Validity offers fluent, strongly-typed validation of values for Java.
+It also uses the [Patience](https://github.com/redfin/patience) library for testing conditions that eventually become true.
 Insist customizes the failure modes of Validity to more thoroughly remove the failed stack trace.
 It also will throw Throwables from the [opentest4j](https://github.com/ota4j-team/opentest4j) project for consistency with other assertion frameworks.
 
@@ -18,21 +20,25 @@ To install, you can simply include the dependency from Maven Central:
 <dependency>
     <groupId>com.redfin</groupId>
     <artifactId>insist</artifactId>
-    <version>0.3.0-beta</version>
+    <version>1.1.0</version>
 </dependency>
+```
+
+For best effect, you should statically import the static `Insist` methods.
+```java
+import static com.redfin.insist.Insist.*;
 ```
 
 ## Assertion vs. Assumption
 
-There are two main methods when using `Insist`.
-They are `assertion()` and `assumption()` in the `Insist` static class.
-The difference is that on validation failure that starts with the `assertion()` method an `AssertionFailedError` throwable will be thrown.
-If the validation started with `assumption()`, on the other hand, a `TestAbortedException` throwable will be thrown.
+There are three entry methods when using `Insist`.
+They are `validate()`, `assume()`, and `asserts()` in the `Insist` static class.
+The difference is in what will be thrown upon validation failure.
 
 ## Stack trace example
 
 `Insist` is designed to be used during test methods directly.
-In that case there should not be a deep inheritance or call stack hierarchy rendering stack traces moot.
+In those cases a too deep inheritance or call stack hierarchy makes stack traces hard to read.
 Regular assertion libraries leave the stack trace intact which is full of implementation details of the test runner itself when what failed was an expected condition.
 Validity was designed to give better standard comparison messages for failed state checks and by removing the extraneous stack trace elements it leads to cleaner, less noisy errors.
 This reduces the "cognitive overhead" when investigating test failures.
@@ -41,7 +47,7 @@ Note that due to the removal of stack traces, `Insist` should **only** be used d
 ```java
 @Test
 public void testAsserts() {
-    Insist.assertion().that("hello").startsWith("w");
+    assertion().that("hello").startsWith("w");
 }
 ```
 Results in the following error (that's the full stack trace):
@@ -62,7 +68,7 @@ With the following code:
 ```java
 @Test
 public void testAsserts() {
-    Insist.assertion("hello, world").that("hello").startsWith("w");
+    withMessage("hello, world").assertion().that("hello").startsWith("w");
 }
 ```
 
