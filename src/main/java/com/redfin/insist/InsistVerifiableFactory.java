@@ -16,10 +16,13 @@
 
 package com.redfin.insist;
 
+import com.redfin.patience.PatientExecutionHandlers;
+import com.redfin.patience.PatientRetryStrategies;
 import com.redfin.patience.PatientWait;
 import com.redfin.validity.AbstractVerifiableFactory;
 import com.redfin.validity.FailedValidationExecutor;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
@@ -34,6 +37,17 @@ import static com.redfin.validity.Validity.validate;
  */
 public final class InsistVerifiableFactory<X extends Throwable>
            extends AbstractVerifiableFactory<X, InsistVerifiableFactory<X>> {
+
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Constants
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    private static final PatientWait DEFAULT_WAIT = PatientWait.builder()
+                                                               .withInitialDelay(Duration.ZERO)
+                                                               .withDefaultTimeout(Duration.ZERO)
+                                                               .withExecutionHandler(PatientExecutionHandlers.ignoringAll())
+                                                               .withRetryStrategy(PatientRetryStrategies.withFixedDelay(Duration.ofMillis(500)))
+                                                               .build();
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Instance Fields & Methods
@@ -79,6 +93,25 @@ public final class InsistVerifiableFactory<X extends Throwable>
     public InsistCompletableFuture<X> withWait(PatientWait wait) {
         validate().that(wait).isNotNull();
         return new InsistCompletableFutureImpl<>(throwableFunction, getMessage(), wait);
+    }
+
+    /**
+     * Like calling {@link #withWait(PatientWait)} with a wait object that retries
+     * repeatedly up to the set tryingFor maximum with a short delay between
+     * attempts. Any throwable thrown during the execution will be ignored.
+     *
+     * @param tryingFor the {@link Duration} object to be used as the maximum
+     *                  time to wait.
+     *                  May not be null or negative.
+     *
+     * @return an InsistCompletableFuture instance initialized with the default wait object
+     * and the given timeout.
+     *
+     * @throws IllegalArgumentException if tryingFor is null or negative.
+     */
+    public InsistFuture<X> within(Duration tryingFor) {
+        validate().that(tryingFor).isAtLeast(Duration.ZERO);
+        return withWait(DEFAULT_WAIT).within(tryingFor);
     }
 
     /**

@@ -22,6 +22,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
+import java.time.Duration;
+
 final class InsistVerifiableFactoryTest {
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,6 +100,26 @@ final class InsistVerifiableFactoryTest {
         Assertions.assertThrows(IllegalArgumentException.class,
                                 () -> getInstance("message").withWait(null),
                                 "InsistVerifiableFactory withWait should throw exception for null wait.");
+    }
+
+    @Test
+    void testWithinReturnsANonNullInstance() {
+        Assertions.assertNotNull(getInstance("message").within(Duration.ofMillis(100)),
+                                 "InsistVerifiableFactory within should return a non-null instance.");
+    }
+
+    @Test
+    void testWithinThrowsExceptionForNullTryingFor() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> getInstance("message").within(null),
+                                "InsistVerifiableFactory within should throw exception for null tryingFor.");
+    }
+
+    @Test
+    void testWithinThrowsExceptionForNegativeTryingFor() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> getInstance("message").within(Duration.ofMillis(100).negated()),
+                                "InsistVerifiableFactory within should throw exception for negative tryingFor.");
     }
 
     @Test
