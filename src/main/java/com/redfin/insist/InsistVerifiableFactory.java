@@ -17,7 +17,7 @@
 package com.redfin.insist;
 
 import com.redfin.patience.PatientExecutionHandlers;
-import com.redfin.patience.PatientRetryStrategies;
+import com.redfin.patience.PatientRetryHandlers;
 import com.redfin.patience.PatientWait;
 import com.redfin.validity.AbstractVerifiableFactory;
 import com.redfin.validity.FailedValidationExecutor;
@@ -46,7 +46,7 @@ public final class InsistVerifiableFactory<X extends Throwable>
                                                                .withInitialDelay(Duration.ZERO)
                                                                .withDefaultTimeout(Duration.ZERO)
                                                                .withExecutionHandler(PatientExecutionHandlers.ignoringAll())
-                                                               .withRetryStrategy(PatientRetryStrategies.withFixedDelay(Duration.ofMillis(500)))
+                                                               .withRetryHandler(PatientRetryHandlers.fixedDelay(Duration.ofMillis(500)))
                                                                .build();
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -17,7 +17,7 @@
 package com.redfin.insist;
 
 import com.redfin.patience.PatientExecutionHandlers;
-import com.redfin.patience.PatientRetryStrategies;
+import com.redfin.patience.PatientRetryHandlers;
 import com.redfin.patience.PatientWait;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,11 +32,11 @@ final class InsistCompletableFutureImplTest
     // Test values & contract implementations
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    private static final Duration DURATION = Duration.ofMillis(100);
+    private static final Duration DURATION = Duration.ofMillis(200);
     private static final PatientWait WAIT = PatientWait.builder()
                                                        .withInitialDelay(Duration.ZERO)
-                                                       .withExecutionHandler(PatientExecutionHandlers.simpleHandler())
-                                                       .withRetryStrategy(PatientRetryStrategies.withFixedDelay(Duration.ofMillis(10)))
+                                                       .withExecutionHandler(PatientExecutionHandlers.simple())
+                                                       .withRetryHandler(PatientRetryHandlers.fixedDelay(Duration.ofMillis(10)))
                                                        .withDefaultTimeout(DURATION)
                                                        .build();
 

@@ -57,7 +57,7 @@ final class InsistCompletableFutureImpl<X extends Throwable>
      *                          create a new throwable.
      *                          May not be null.
      * @param message           the String message prefix if validation fails.
-     * @param wait              the {@link PatientWait} to use if waiting for validation to succeed.
+     * @param wait              the {@link com.redfin.patience.PatientWait} to use if waiting for validation to succeed.
      *                          May not be null.
      *
      * @throws IllegalArgumentException if throwableFunction or wait are null.
