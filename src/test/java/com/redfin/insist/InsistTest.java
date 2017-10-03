@@ -40,17 +40,17 @@ final class InsistTest {
 
     @Test
     void testInsistAssumeReturnsNonNullFactory() {
-        Assertions.assertNotNull(Insist.assume(),
-                                 "Insist.assume() should return a non-null factory.");
+        Assertions.assertNotNull(Insist.assumes(),
+                                 "Insist.assumes() should return a non-null factory.");
     }
 
     @Test
     void testInsistAssumeReturnsNullMessageFactory() throws Exception {
-        AbstractVerifiableFactory<?, ?> factory = Insist.assume();
+        AbstractVerifiableFactory<?, ?> factory = Insist.assumes();
         Field field = factory.getClass().getSuperclass().getDeclaredField("message");
         field.setAccessible(true);
         Assertions.assertNull(field.get(factory),
-                              "Insist.assume() should return a factory with a null message.");
+                              "Insist.assumes() should return a factory with a null message.");
     }
 
     @Test
@@ -149,7 +149,7 @@ final class InsistTest {
     @Test
     void testAssumeFailureThrowsSkipException() {
         Assertions.assertThrows(TestAbortedException.class,
-                                () -> Insist.assume().that(true).isFalse(),
-                                "An assume failure should throw a TestAbortedException.");
+                                () -> Insist.assumes().that(true).isFalse(),
+                                "An assumes failure should throw a TestAbortedException.");
     }
 }

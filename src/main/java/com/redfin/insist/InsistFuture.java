@@ -60,5 +60,5 @@ public interface InsistFuture<X extends Throwable> {
      * @throws IllegalArgumentException if expectedThrowableClass or executable are null.
      */
     <T extends Throwable> T thatEventuallyThrows(Class<T> expectedThrowableClass,
-                                                 Executable<T> executable) throws X;
+                                                 Executable<?> executable) throws X;
 }

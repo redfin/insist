@@ -94,7 +94,7 @@ final class InsistCompletableFutureImpl<X extends Throwable>
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Throwable> T thatEventuallyThrows(Class<T> expectedThrowableClass,
-                                                           Executable<T> executable) throws X {
+                                                        Executable<?> executable) throws X {
         validate().that(expectedThrowableClass).isNotNull();
         validate().that(executable).isNotNull();
         T caught;

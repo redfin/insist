@@ -20,7 +20,7 @@ To install, you can simply include the dependency from Maven Central:
 <dependency>
     <groupId>com.redfin</groupId>
     <artifactId>insist</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -31,8 +31,8 @@ import static com.redfin.insist.Insist.*;
 
 ## Assertion vs. Assumption
 
-There are three entry methods when using `Insist`.
-They are `validate()`, `assume()`, and `asserts()` in the `Insist` static class.
+There are two entry methods when using `Insist`.
+They are `assumes()`, and `asserts()` in the `Insist` static class.
 The difference is in what will be thrown upon validation failure.
 
 ## Stack trace example

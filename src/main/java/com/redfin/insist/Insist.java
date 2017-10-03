@@ -69,7 +69,7 @@ public final class Insist {
      * @return an {@link InsistVerifiableFactory} instance with the default message prefix thatEventually
      * throws a {@link TestAbortedException} on validation failure.
      */
-    public static InsistVerifiableFactory<TestAbortedException> assume() {
+    public static InsistVerifiableFactory<TestAbortedException> assumes() {
         return NULL_MESSAGE_ASSUME_FACTORY;
     }
 
