@@ -39,7 +39,7 @@ final class StackTrimmingFailedValidationExecutorTest {
             String subject = "subject";
             String message = "message";
             X throwable = Assertions.assertThrows(getThrowableClass(),
-                                                  () -> getFailedValidationExecutor().fail(expected, subject, message));
+                                                  () -> getFailedValidationExecutor().fail(expected, subject, () -> message));
             Assertions.assertEquals(String.format(MESSAGE_FORMAT,
                                                   message,
                                                   expected,
@@ -53,7 +53,7 @@ final class StackTrimmingFailedValidationExecutorTest {
             String expected = "expected";
             String subject = "subject";
             X throwable = Assertions.assertThrows(getThrowableClass(),
-                                                  () -> getFailedValidationExecutor().fail(expected, subject, null));
+                                                  () -> getFailedValidationExecutor().fail(expected, subject, () -> null));
             Assertions.assertTrue(null != throwable.getMessage() && throwable.getMessage().startsWith("Insistence failure"),
                                   "Expected the thrown throwable for validation failure to start with the expected message.");
         }
@@ -62,7 +62,7 @@ final class StackTrimmingFailedValidationExecutorTest {
         default void testFailedValidationExecutorThrowsForNullThrowable() {
             FailedValidationExecutor<?> executor = new StackTrimmingFailedValidationExecutor<>(message -> null);
             Assertions.assertThrows(NullPointerException.class,
-                                    () -> executor.fail("expected", "subject", "message"));
+                                    () -> executor.fail("expected", "subject", () -> "message"));
         }
     }
 
@@ -87,7 +87,7 @@ final class StackTrimmingFailedValidationExecutorTest {
             String subject = "subject";
             String message = "message";
             Assertions.assertThrows(NoStackRuntimeException.class,
-                                    () -> getNoStackFailedValidationExecutor().fail(expected, subject, message));
+                                    () -> getNoStackFailedValidationExecutor().fail(expected, subject, () -> message));
         }
     }
 
@@ -125,7 +125,7 @@ final class StackTrimmingFailedValidationExecutorTest {
         @Test
         void testFailedValidationExecutorThrowsExceptionForNullThrowableCreation() {
             NullPointerException exception = Assertions.assertThrows(NullPointerException.class,
-                                                                     () -> new DefaultValidityFailedValidationExecutor<>(str -> null).fail("", "", ""));
+                                                                     () -> new DefaultValidityFailedValidationExecutor<>(str -> null).fail("", "", () -> ""));
             Assertions.assertEquals(ValidityUtils.nullThrowableFromFunction(),
                                     exception.getMessage(),
                                     "Failed validation executors should throw the expected exception for a null throwable created.");

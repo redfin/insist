@@ -22,6 +22,7 @@ import com.redfin.validity.ValidityUtils;
 
 import java.util.OptionalInt;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.redfin.validity.Validity.validate;
 
@@ -56,7 +57,7 @@ final class StackTrimmingFailedValidationExecutor<X extends Throwable>
 
     /**
      * Create a new instance of a {@link StackTrimmingFailedValidationExecutor} thatEventually
-     * will use the given throwableFunction when the {@link #fail(String, Object, String)}
+     * will use the given throwableFunction when the {@link #fail(String, Object, Supplier)}
      * method is called.
      *
      * @param throwableFunction the {@link Function} thatEventually takes in a String and returns a
@@ -71,11 +72,17 @@ final class StackTrimmingFailedValidationExecutor<X extends Throwable>
     }
 
     @Override
-    public <T> void fail(String expected, T subject, String message) throws X {
+    public <T> void fail(String expected,
+                         T subject,
+                         Supplier<String> messageSupplier) throws X {
         if (null == expected) {
             throw new NullPointerException(ValidityUtils.nullArgumentMessage("expected"));
         }
+        if (null == messageSupplier) {
+            throw new NullPointerException(ValidityUtils.nullArgumentMessage("messageSupplier"));
+        }
         String subjectDescription = ValidityUtils.describe(subject);
+        String message = messageSupplier.get();
         if (null == message) {
             message = DEFAULT_MESSAGE;
         }

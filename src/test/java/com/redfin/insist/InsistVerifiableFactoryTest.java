@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
 import java.time.Duration;
+import java.util.function.Supplier;
 
 final class InsistVerifiableFactoryTest {
 
@@ -30,13 +31,13 @@ final class InsistVerifiableFactoryTest {
     // Test helpers
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    private InsistVerifiableFactory<AssertionFailedError> getInstance(String message) {
-        return getInstance(message, new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new));
+    private InsistVerifiableFactory<AssertionFailedError> getInstance(Supplier<String> messageSupplier) {
+        return getInstance(messageSupplier, new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new));
     }
 
-    private InsistVerifiableFactory<AssertionFailedError> getInstance(String message,
-                                                                          FailedValidationExecutor<AssertionFailedError> failedValidationExecutor) {
-        return new InsistVerifiableFactory<>(message,
+    private InsistVerifiableFactory<AssertionFailedError> getInstance(Supplier<String> messageSupplier,
+                                                                      FailedValidationExecutor<AssertionFailedError> failedValidationExecutor) {
+        return new InsistVerifiableFactory<>(messageSupplier,
                                              AssertionFailedError::new,
                                              failedValidationExecutor);
     }
@@ -47,20 +48,20 @@ final class InsistVerifiableFactoryTest {
 
     @Test
     void testCanInstantiateInsistVerifiableFactory() {
-        Assertions.assertNotNull(getInstance("message"),
+        Assertions.assertNotNull(getInstance(() -> "message"),
                                  "Should be able to instantiate an InsistVerifiableFactory.");
     }
 
     @Test
     void testCanInstantiateWithNullMessage() {
-        Assertions.assertNotNull(getInstance(null),
+        Assertions.assertNotNull(getInstance(() -> null),
                                  "Should be able to instantiate an InsistVerifiableFactory with a null message.");
     }
 
     @Test
     void testConstructorThrowsExceptionForNullBiFunction() {
         Assertions.assertThrows(NullPointerException.class,
-                                () -> new InsistVerifiableFactory<>("hello",
+                                () -> new InsistVerifiableFactory<>(() -> "hello",
                                                                     null,
                                                                     new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new)),
                                 "InsistVerifiableFactory constructor should throw exception for null bi-function.");
@@ -69,7 +70,7 @@ final class InsistVerifiableFactoryTest {
     @Test
     void testConstructorThrowsExceptionForNullFailedValidationExecutor() {
         Assertions.assertThrows(NullPointerException.class,
-                                () -> new InsistVerifiableFactory<>("hello",
+                                () -> new InsistVerifiableFactory<>(() -> "hello",
                                                                     AssertionFailedError::new,
                                                                     null),
                                 "InsistVerifiableFactory constructor should throw exception for null failed validation executor.");
@@ -77,7 +78,7 @@ final class InsistVerifiableFactoryTest {
 
     @Test
     void testGetFactoryReturnsANonNullInstance() {
-        Assertions.assertNotNull(getInstance("message").getFactory("newMessage",
+        Assertions.assertNotNull(getInstance(() -> "message").getFactory(() -> "newMessage",
                                                                    new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new)),
                                  "InsistVerifiableFactory getFactory should return a non-null instance.");
     }
@@ -85,61 +86,61 @@ final class InsistVerifiableFactoryTest {
     @Test
     void testGetFactoryThrowsExceptionForNullFailedValidationExecutor() {
         Assertions.assertThrows(NullPointerException.class,
-                                () -> getInstance("message").getFactory("newMessage", null),
+                                () -> getInstance(() -> "message").getFactory(() -> "newMessage", null),
                                 "InsistVerifiableFactory getFactory should throw exception for null failed validation executor.");
     }
 
     @Test
     void testWithWaitReturnsANonNullInstance() {
-        Assertions.assertNotNull(getInstance("message").withWait(PatientWait.builder().build()),
+        Assertions.assertNotNull(getInstance(() -> "message").withWait(PatientWait.builder().build()),
                                  "InsistVerifiableFactory withWait should return a non-null instance.");
     }
 
     @Test
     void testWithWaitThrowsExceptionForNullWait() {
         Assertions.assertThrows(IllegalArgumentException.class,
-                                () -> getInstance("message").withWait(null),
+                                () -> getInstance(() -> "message").withWait(null),
                                 "InsistVerifiableFactory withWait should throw exception for null wait.");
     }
 
     @Test
     void testWithinReturnsANonNullInstance() {
-        Assertions.assertNotNull(getInstance("message").within(Duration.ofMillis(100)),
+        Assertions.assertNotNull(getInstance(() -> "message").within(Duration.ofMillis(100)),
                                  "InsistVerifiableFactory within should return a non-null instance.");
     }
 
     @Test
     void testWithinThrowsExceptionForNullTryingFor() {
         Assertions.assertThrows(IllegalArgumentException.class,
-                                () -> getInstance("message").within(null),
+                                () -> getInstance(() -> "message").within(null),
                                 "InsistVerifiableFactory within should throw exception for null tryingFor.");
     }
 
     @Test
     void testWithinThrowsExceptionForNegativeTryingFor() {
         Assertions.assertThrows(IllegalArgumentException.class,
-                                () -> getInstance("message").within(Duration.ofMillis(100).negated()),
+                                () -> getInstance(() -> "message").within(Duration.ofMillis(100).negated()),
                                 "InsistVerifiableFactory within should throw exception for negative tryingFor.");
     }
 
     @Test
     void testThatThrowsExceptionForNullExpectedClass() {
         Assertions.assertThrows(IllegalArgumentException.class,
-                                () -> getInstance("message").thatThrows(null, () -> {}),
+                                () -> getInstance(() -> "message").thatThrows(null, () -> {}),
                                 "InsistVerifiableFactory thatThrows should throw exception for null expected class.");
     }
 
     @Test
     void testThatThrowsThrowsExceptionForNullExecutable() {
         Assertions.assertThrows(IllegalArgumentException.class,
-                                () -> getInstance("message").thatThrows(IllegalArgumentException.class, null),
+                                () -> getInstance(() -> "message").thatThrows(IllegalArgumentException.class, null),
                                 "InsistVerifiableFactory thatThrows should throw exception for null executable.");
     }
 
     @Test
     void testThatThrowsThrowsExceptionForExecutableThatDoesNotThrowExpected() {
         Assertions.assertThrows(IllegalArgumentException.class,
-                                () -> getInstance("message").thatThrows(null, () -> {}),
+                                () -> getInstance(() -> "message").thatThrows(null, () -> {}),
                                 "InsistVerifiableFactory thatThrows should throw exception for null expected class.");
 
     }
@@ -148,7 +149,7 @@ final class InsistVerifiableFactoryTest {
     void testThatThrowsReturnsExpectedThrowableIfThrown() {
         String message = "whoops";
         Assertions.assertEquals(message,
-                                getInstance("message").thatThrows(IllegalArgumentException.class,
+                                getInstance(() -> "message").thatThrows(IllegalArgumentException.class,
                                                                   () -> { throw new IllegalArgumentException("whoops"); })
                                                       .getMessage(),
                                 "InsistFuture thatEventuallyThrows should return the thrown expected exception.");

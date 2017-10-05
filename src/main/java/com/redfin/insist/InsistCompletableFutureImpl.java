@@ -22,6 +22,7 @@ import com.redfin.patience.PatientWait;
 import java.time.Duration;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 import static com.redfin.validity.Validity.validate;
 
@@ -45,7 +46,7 @@ final class InsistCompletableFutureImpl<X extends Throwable>
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     private final BiFunction<String, Throwable, X> throwableFunction;
-    private final String message;
+    private final Supplier<String> messageSupplier;
     private final PatientWait wait;
 
     private Duration timeout;
@@ -56,17 +57,18 @@ final class InsistCompletableFutureImpl<X extends Throwable>
      * @param throwableFunction the function to take in a string and throwable and
      *                          create a new throwable.
      *                          May not be null.
-     * @param message           the String message prefix if validation fails.
+     * @param messageSupplier   the {@link Supplier} of the String message prefix if validation fails.
+     *                          May not be null.
      * @param wait              the {@link com.redfin.patience.PatientWait} to use if waiting for validation to succeed.
      *                          May not be null.
      *
-     * @throws IllegalArgumentException if throwableFunction or wait are null.
+     * @throws IllegalArgumentException if throwableFunction, messageSupplier, or wait are null.
      */
     InsistCompletableFutureImpl(BiFunction<String, Throwable, X> throwableFunction,
-                                String message,
+                                Supplier<String> messageSupplier,
                                 PatientWait wait) {
         this.throwableFunction = validate().that(throwableFunction).isNotNull();
-        this.message = message;
+        this.messageSupplier = validate().that(messageSupplier).isNotNull();
         this.wait = validate().that(wait).isNotNull();
         this.timeout = wait.getDefaultTimeout();
     }
@@ -87,7 +89,7 @@ final class InsistCompletableFutureImpl<X extends Throwable>
                 .get(timeout);
         } catch (PatientTimeoutException exception) {
             // Failure, throw requested throwable type
-            throw throwableFunction.apply(fail(message, exception.getAttemptsCount()), exception);
+            throw throwableFunction.apply(fail(messageSupplier, exception.getAttemptsCount()), exception);
         }
     }
 
@@ -115,12 +117,13 @@ final class InsistCompletableFutureImpl<X extends Throwable>
             }).get(timeout);
         } catch (PatientTimeoutException exception) {
             // Failure, throw requested throwable type
-            throw throwableFunction.apply(fail(message, exception.getAttemptsCount()), exception);
+            throw throwableFunction.apply(fail(messageSupplier, exception.getAttemptsCount()), exception);
         }
         return caught;
     }
 
-    private static String fail(String message, int numAttempts) {
+    private static String fail(Supplier<String> messageSupplier, int numAttempts) {
+        String message = messageSupplier.get();
         if (null == message) {
             return String.format(DEFAULT_FORMAT, numAttempts);
         } else {

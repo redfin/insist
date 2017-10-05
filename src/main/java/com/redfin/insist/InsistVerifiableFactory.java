@@ -25,6 +25,7 @@ import com.redfin.validity.FailedValidationExecutor;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import static com.redfin.validity.Validity.validate;
 
@@ -58,7 +59,8 @@ public final class InsistVerifiableFactory<X extends Throwable>
     /**
      * Create a new InsistVerifiableFactory instance with the given arguments.
      *
-     * @param message                  the String message prefix for use upon validation failure.
+     * @param messageSupplier          the {@link Supplier} of the String message prefix for use upon validation failure.
+     *                                 May not be null.
      * @param throwableFunction        the function thatEventually takes in a message and cause and creates
      *                                 a throwable for failed validation.
      *                                 May not be null.
@@ -68,17 +70,17 @@ public final class InsistVerifiableFactory<X extends Throwable>
      *
      * @throws NullPointerException if throwableFunction or failedValidationExecutor are null.
      */
-    InsistVerifiableFactory(String message,
+    InsistVerifiableFactory(Supplier<String> messageSupplier,
                             BiFunction<String, Throwable, X> throwableFunction,
                             FailedValidationExecutor<X> failedValidationExecutor) {
-        super(message, failedValidationExecutor);
+        super(messageSupplier, failedValidationExecutor);
         this.throwableFunction = Objects.requireNonNull(throwableFunction);
     }
 
     @Override
-    protected InsistVerifiableFactory<X> getFactory(String message,
+    protected InsistVerifiableFactory<X> getFactory(Supplier<String> messageSupplier,
                                                     FailedValidationExecutor<X> failedValidationExecutor) {
-        return new InsistVerifiableFactory<>(message,
+        return new InsistVerifiableFactory<>(messageSupplier,
                                              throwableFunction,
                                              failedValidationExecutor);
     }
@@ -92,7 +94,7 @@ public final class InsistVerifiableFactory<X extends Throwable>
      */
     public InsistCompletableFuture<X> withWait(PatientWait wait) {
         validate().that(wait).isNotNull();
-        return new InsistCompletableFutureImpl<>(throwableFunction, getMessage(), wait);
+        return new InsistCompletableFutureImpl<>(throwableFunction, getMessageSupplier(), wait);
     }
 
     /**

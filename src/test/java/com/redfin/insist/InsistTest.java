@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 final class InsistTest {
 
@@ -39,17 +40,18 @@ final class InsistTest {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     @Test
-    void testInsistAssumeReturnsNonNullFactory() {
+    void testInsistAssumesReturnsNonNullFactory() {
         Assertions.assertNotNull(Insist.assumes(),
                                  "Insist.assumes() should return a non-null factory.");
     }
 
     @Test
-    void testInsistAssumeReturnsNullMessageFactory() throws Exception {
+    @SuppressWarnings("unchecked")
+    void testInsistAssumesReturnsNullMessageFactory() throws Exception {
         AbstractVerifiableFactory<?, ?> factory = Insist.assumes();
-        Field field = factory.getClass().getSuperclass().getDeclaredField("message");
+        Field field = factory.getClass().getSuperclass().getDeclaredField("messageSupplier");
         field.setAccessible(true);
-        Assertions.assertNull(field.get(factory),
+        Assertions.assertNull(((Supplier<String>) field.get(factory)).get(),
                               "Insist.assumes() should return a factory with a null message.");
     }
 
@@ -60,12 +62,29 @@ final class InsistTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testInsistAssertsReturnsNullMessageFactory() throws Exception {
         AbstractVerifiableFactory<?, ?> factory = Insist.asserts();
-        Field field = factory.getClass().getSuperclass().getDeclaredField("message");
+        Field field = factory.getClass().getSuperclass().getDeclaredField("messageSupplier");
         field.setAccessible(true);
-        Assertions.assertNull(field.get(factory),
+        Assertions.assertNull(((Supplier<String>) field.get(factory)).get(),
                               "Insist.asserts() should return a factory with a null message.");
+    }
+
+    @Test
+    void testInsistExpectsReturnsNonNullFactory() {
+        Assertions.assertNotNull(Insist.expects(),
+                                 "Insist.expects() should return a non-null factory.");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testInsistExpectsReturnsNullMessageFactory() throws Exception {
+        AbstractVerifiableFactory<?, ?> factory = Insist.expects();
+        Field field = factory.getClass().getSuperclass().getDeclaredField("messageSupplier");
+        field.setAccessible(true);
+        Assertions.assertNull(((Supplier<String>) field.get(factory)).get(),
+                              "Insist.expects() should return a factory with a null message.");
     }
 
     @Test
