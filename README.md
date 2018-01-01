@@ -81,3 +81,24 @@ java.lang.AssertionFailedError: Hello, world
 
 	at com.redfin.example.FooTest.testAsserts(FooTest.java:41)
 ```
+
+## Waiting for results example
+
+Insist also has a dependency on the [Patience](https://github.com/redfin/patience) library which allows you to wait for
+a valid result to be true. If no valid result is found within a given timeout then
+an error or exception will be thrown the same as above.
+
+```java
+@Test
+public void testEventualAsserts() {
+    withMessage("The value never became true").asserts()
+                                              .within(Duration.ofMinutes(1))
+                                              .thatEventually(() -> someBooleanSupplier.get());
+}
+```
+
+in the above example, the method `someBooleanSupplier.get()` will be called every 500 milliseconds (the default)
+until either a `true` value is received or until the Duration of 1 minute is reached. If the timeout
+is reached than an assertion failure is thrown.
+Note that it might stop before 1 minute has been reached if it had a failed attempt and waiting for 500 milliseconds
+would put it after the requested timeout as per the Patience library.
