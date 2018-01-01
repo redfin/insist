@@ -38,7 +38,6 @@ final class InsistVerifiableFactoryTest {
     private InsistVerifiableFactory<AssertionFailedError> getInstance(Supplier<String> messageSupplier,
                                                                       FailedValidationExecutor<AssertionFailedError> failedValidationExecutor) {
         return new InsistVerifiableFactory<>(messageSupplier,
-                                             AssertionFailedError::new,
                                              failedValidationExecutor);
     }
 
@@ -59,19 +58,9 @@ final class InsistVerifiableFactoryTest {
     }
 
     @Test
-    void testConstructorThrowsExceptionForNullBiFunction() {
-        Assertions.assertThrows(NullPointerException.class,
-                                () -> new InsistVerifiableFactory<>(() -> "hello",
-                                                                    null,
-                                                                    new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new)),
-                                "InsistVerifiableFactory constructor should throw exception for null bi-function.");
-    }
-
-    @Test
     void testConstructorThrowsExceptionForNullFailedValidationExecutor() {
         Assertions.assertThrows(NullPointerException.class,
                                 () -> new InsistVerifiableFactory<>(() -> "hello",
-                                                                    AssertionFailedError::new,
                                                                     null),
                                 "InsistVerifiableFactory constructor should throw exception for null failed validation executor.");
     }

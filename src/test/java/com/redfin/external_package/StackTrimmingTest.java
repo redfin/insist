@@ -22,6 +22,8 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
+import java.time.Duration;
+
 /*
  * A separate package is used for this test since the default behavior
  * of the DefaultValidityFailedValidationExecutor supplied in the library

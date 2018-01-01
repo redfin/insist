@@ -18,9 +18,9 @@ package com.redfin.insist;
 
 import com.redfin.patience.PatientTimeoutException;
 import com.redfin.patience.PatientWait;
+import com.redfin.validity.FailedValidationExecutor;
 
 import java.time.Duration;
-import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -45,8 +45,8 @@ final class InsistCompletableFutureImpl<X extends Throwable>
     // Instance Fields & Methods
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    private final BiFunction<String, Throwable, X> throwableFunction;
     private final Supplier<String> messageSupplier;
+    private final FailedValidationExecutor<X> failedValidationExecutor;
     private final PatientWait wait;
 
     private Duration timeout;
@@ -54,9 +54,6 @@ final class InsistCompletableFutureImpl<X extends Throwable>
     /**
      * Create a new InsistCompletableFutureImpl instance with the given arguments.
      *
-     * @param throwableFunction the function to take in a string and throwable and
-     *                          create a new throwable.
-     *                          May not be null.
      * @param messageSupplier   the {@link Supplier} of the String message prefix if validation fails.
      *                          May not be null.
      * @param wait              the {@link com.redfin.patience.PatientWait} to use if waiting for validation to succeed.
@@ -64,11 +61,11 @@ final class InsistCompletableFutureImpl<X extends Throwable>
      *
      * @throws IllegalArgumentException if throwableFunction, messageSupplier, or wait are null.
      */
-    InsistCompletableFutureImpl(BiFunction<String, Throwable, X> throwableFunction,
-                                Supplier<String> messageSupplier,
+    InsistCompletableFutureImpl(Supplier<String> messageSupplier,
+                                FailedValidationExecutor<X> failedValidationExecutor,
                                 PatientWait wait) {
-        this.throwableFunction = validate().that(throwableFunction).isNotNull();
         this.messageSupplier = validate().that(messageSupplier).isNotNull();
+        this.failedValidationExecutor = validate().that(failedValidationExecutor).isNotNull();
         this.wait = validate().that(wait).isNotNull();
         this.timeout = wait.getDefaultTimeout();
     }
@@ -88,8 +85,10 @@ final class InsistCompletableFutureImpl<X extends Throwable>
             wait.from(supplier::getAsBoolean)
                 .get(timeout);
         } catch (PatientTimeoutException exception) {
-            // Failure, throw requested throwable type
-            throw throwableFunction.apply(fail(messageSupplier, exception.getAttemptsCount()), exception);
+            // Failure
+            failedValidationExecutor.fail("Eventually true",
+                                          "always false",
+                                          fail(messageSupplier, exception.getAttemptsCount()));
         }
     }
 
@@ -99,7 +98,7 @@ final class InsistCompletableFutureImpl<X extends Throwable>
                                                         Executable<?> executable) throws X {
         validate().that(expectedThrowableClass).isNotNull();
         validate().that(executable).isNotNull();
-        T caught;
+        T caught = null;
         try {
             caught = wait.from(() -> {
                 try {
@@ -116,18 +115,20 @@ final class InsistCompletableFutureImpl<X extends Throwable>
                 }
             }).get(timeout);
         } catch (PatientTimeoutException exception) {
-            // Failure, throw requested throwable type
-            throw throwableFunction.apply(fail(messageSupplier, exception.getAttemptsCount()), exception);
+            // Failure
+            failedValidationExecutor.fail("Expected to catch throwable '" + expectedThrowableClass.getName() + "'",
+                                          "not caught",
+                                          fail(messageSupplier, exception.getAttemptsCount()));
         }
         return caught;
     }
 
-    private static String fail(Supplier<String> messageSupplier, int numAttempts) {
+    private static Supplier<String> fail(Supplier<String> messageSupplier, int numAttempts) {
         String message = messageSupplier.get();
         if (null == message) {
-            return String.format(DEFAULT_FORMAT, numAttempts);
+            return () -> String.format(DEFAULT_FORMAT, numAttempts);
         } else {
-            return String.format(CUSTOM_FORMAT, message, numAttempts);
+            return () -> String.format(CUSTOM_FORMAT, message, numAttempts);
         }
     }
 }

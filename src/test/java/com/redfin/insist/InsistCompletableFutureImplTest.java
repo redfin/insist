@@ -69,8 +69,7 @@ final class InsistCompletableFutureImplTest
                                                               () -> getInstance(null).within(Duration.ZERO)
                                                                                      .thatEventually(() -> false),
                                                               "An AssertionFailedError should have been thrown.");
-        Assertions.assertEquals("Timeout reached after 1 unsuccessful attempt(s)",
-                                thrown.getMessage(),
+        Assertions.assertTrue(thrown.getMessage().startsWith("Timeout reached after 1 unsuccessful attempt(s)"),
                                 "Should have thrown the expected message for a null message verification.");
     }
 
@@ -81,10 +80,10 @@ final class InsistCompletableFutureImplTest
                                                               () -> getInstance(message).within(Duration.ZERO)
                                                                                         .thatEventually(() -> false),
                                                               "An AssertionFailedError should have been thrown.");
-        Assertions.assertEquals(String.format("%s : %s",
-                                              message,
-                                              "Timeout reached after 1 unsuccessful attempt(s)"),
-                                thrown.getMessage(),
-                                "Should have thrown the expected message for a given message verification.");
+        Assertions.assertTrue(thrown.getMessage()
+                                    .startsWith(String.format("%s : %s",
+                                                              message,
+                                                              "Timeout reached after 1 unsuccessful attempt(s)")),
+                              "Should have thrown the expected message for a given message verification.");
     }
 }

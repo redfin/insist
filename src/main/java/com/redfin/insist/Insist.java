@@ -20,8 +20,6 @@ import com.redfin.validity.ValidityUtils;
 import org.opentest4j.AssertionFailedError;
 import org.opentest4j.TestAbortedException;
 
-import java.util.function.BiFunction;
-
 /**
  * A static class used as the entry point in using the Insist library.
  */
@@ -31,9 +29,6 @@ public final class Insist {
     // Constants
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    private static final BiFunction<String, Throwable, AssertionFailedError> ASSERT_BI_FUNCTION;
-    private static final BiFunction<String, Throwable, TestAbortedException> ASSUME_BI_FUNCTION;
-    private static final BiFunction<String, Throwable, IllegalStateException> EXPECT_BI_FUNCTION;
     private static final StackTrimmingFailedValidationExecutor<AssertionFailedError> ASSERT_EXECUTOR;
     private static final StackTrimmingFailedValidationExecutor<TestAbortedException> ASSUME_EXECUTOR;
     private static final StackTrimmingFailedValidationExecutor<IllegalStateException> EXPECT_EXECUTOR;
@@ -48,15 +43,12 @@ public final class Insist {
     private static final InsistVerifiableFactory<IllegalStateException> NULL_MESSAGE_EXPECT_FACTORY;
 
     static {
-        ASSERT_BI_FUNCTION = AssertionFailedError::new;
-        ASSUME_BI_FUNCTION = TestAbortedException::new;
-        EXPECT_BI_FUNCTION = IllegalStateException::new;
         ASSERT_EXECUTOR = new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new);
         ASSUME_EXECUTOR = new StackTrimmingFailedValidationExecutor<>(TestAbortedException::new);
         EXPECT_EXECUTOR = new StackTrimmingFailedValidationExecutor<>(IllegalStateException::new);
-        NULL_MESSAGE_ASSERT_FACTORY = new InsistVerifiableFactory<>(() -> null, ASSERT_BI_FUNCTION, ASSERT_EXECUTOR);
-        NULL_MESSAGE_ASSUME_FACTORY = new InsistVerifiableFactory<>(() -> null, ASSUME_BI_FUNCTION, ASSUME_EXECUTOR);
-        NULL_MESSAGE_EXPECT_FACTORY = new InsistVerifiableFactory<>(() -> null, EXPECT_BI_FUNCTION, EXPECT_EXECUTOR);
+        NULL_MESSAGE_ASSERT_FACTORY = new InsistVerifiableFactory<>(() -> null, ASSERT_EXECUTOR);
+        NULL_MESSAGE_ASSUME_FACTORY = new InsistVerifiableFactory<>(() -> null, ASSUME_EXECUTOR);
+        NULL_MESSAGE_EXPECT_FACTORY = new InsistVerifiableFactory<>(() -> null, EXPECT_EXECUTOR);
     }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
