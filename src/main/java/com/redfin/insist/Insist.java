@@ -29,9 +29,8 @@ public final class Insist {
     // Constants
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    private static final StackTrimmingFailedValidationExecutor<AssertionFailedError> ASSERT_EXECUTOR;
-    private static final StackTrimmingFailedValidationExecutor<TestAbortedException> ASSUME_EXECUTOR;
-    private static final StackTrimmingFailedValidationExecutor<IllegalStateException> EXPECT_EXECUTOR;
+    private static final AssertionFailedValidationExecutor ASSERT_EXECUTOR;
+    private static final AbortedFailedValidationExecutor ASSUME_EXECUTOR;
 
     /*
      * The null message instances of the factories can be re-used safely. Cache them
@@ -40,15 +39,12 @@ public final class Insist {
 
     private static final InsistVerifiableFactory<AssertionFailedError> NULL_MESSAGE_ASSERT_FACTORY;
     private static final InsistVerifiableFactory<TestAbortedException> NULL_MESSAGE_ASSUME_FACTORY;
-    private static final InsistVerifiableFactory<IllegalStateException> NULL_MESSAGE_EXPECT_FACTORY;
 
     static {
-        ASSERT_EXECUTOR = new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new);
-        ASSUME_EXECUTOR = new StackTrimmingFailedValidationExecutor<>(TestAbortedException::new);
-        EXPECT_EXECUTOR = new StackTrimmingFailedValidationExecutor<>(IllegalStateException::new);
+        ASSERT_EXECUTOR = new AssertionFailedValidationExecutor();
+        ASSUME_EXECUTOR = new AbortedFailedValidationExecutor();
         NULL_MESSAGE_ASSERT_FACTORY = new InsistVerifiableFactory<>(() -> null, ASSERT_EXECUTOR);
         NULL_MESSAGE_ASSUME_FACTORY = new InsistVerifiableFactory<>(() -> null, ASSUME_EXECUTOR);
-        NULL_MESSAGE_EXPECT_FACTORY = new InsistVerifiableFactory<>(() -> null, EXPECT_EXECUTOR);
     }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,14 +65,6 @@ public final class Insist {
      */
     public static InsistVerifiableFactory<TestAbortedException> assumes() {
         return NULL_MESSAGE_ASSUME_FACTORY;
-    }
-
-    /**
-     * @return an {@link InsistVerifiableFactory} instance with the default message prefix thatEventually
-     * throws an {@link IllegalStateException} on validation failure.
-     */
-    public static InsistVerifiableFactory<IllegalStateException> expects() {
-        return NULL_MESSAGE_EXPECT_FACTORY;
     }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

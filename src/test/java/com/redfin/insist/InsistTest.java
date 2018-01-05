@@ -72,22 +72,6 @@ final class InsistTest {
     }
 
     @Test
-    void testInsistExpectsReturnsNonNullFactory() {
-        Assertions.assertNotNull(Insist.expects(),
-                                 "Insist.expects() should return a non-null factory.");
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    void testInsistExpectsReturnsNullMessageFactory() throws Exception {
-        AbstractVerifiableFactory<?, ?> factory = Insist.expects();
-        Field field = factory.getClass().getSuperclass().getDeclaredField("messageSupplier");
-        field.setAccessible(true);
-        Assertions.assertNull(((Supplier<String>) field.get(factory)).get(),
-                              "Insist.expects() should return a factory with a null message.");
-    }
-
-    @Test
     void testInsistIsMarkedAsFinal() {
         Assertions.assertTrue(Modifier.isFinal(Insist.class.getModifiers()),
                               "The Insist class should be marked as final");

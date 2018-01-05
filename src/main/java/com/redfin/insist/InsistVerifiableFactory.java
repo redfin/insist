@@ -94,7 +94,9 @@ public final class InsistVerifiableFactory<X extends Throwable>
     /**
      * Like calling {@link #withWait(PatientWait)} with a wait object that retries
      * repeatedly up to the set tryingFor maximum with a short delay between
-     * attempts. Any throwable thrown during the execution will be ignored.
+     * attempts. Any throwable thrown during the execution will be ignored. Note that this
+     * does NOT interrupt the attempt to get a valid result but checks the timeout between
+     * successive attempts to get a true value.
      *
      * @param tryingFor the {@link Duration} object to be used as the maximum
      *                  time to wait.

@@ -21,73 +21,42 @@ import com.redfin.validity.Validity;
 import com.redfin.validity.ValidityUtils;
 
 import java.util.OptionalInt;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.redfin.validity.Validity.validate;
-
 /**
- * An implementation of {@link FailedValidationExecutor} thatEventually will remove all stack frames
- * from the generated {@link Throwable} except for the actual line thatEventually called for validation.
- * This is intended for use with Assertions and Assumptions thatEventually will be used in actual test methods
- * where the extended stack frame is noisy and not helpful. It should not be used in frameworks or
- * production code where the stack trace is essential for debugging.
+ * Base class for {@link FailedValidationExecutor} instances that will be trimming out all except for the first
+ * non-Insist, non-Validity libraries line from the stack trace.
+ *
+ * @param <X> the type of the Throwable it will throw.
  */
-final class StackTrimmingFailedValidationExecutor<X extends Throwable>
- implements FailedValidationExecutor<X> {
+public abstract class AbstractStackTrimmingFailedValidationExecutor<X extends Throwable>
+           implements FailedValidationExecutor<X> {
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Constants
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    private static final String DEFAULT_MESSAGE = "Insistence failure";
-    private static final String MESSAGE_FORMAT = "%s\n    expected : %s\n     subject : <%s>";
-    private static final String PACKAGE_NAME = StackTrimmingFailedValidationExecutor.class.getPackage().getName() + ".";
+    private static final String PACKAGE_NAME = AssertionFailedValidationExecutor.class.getPackage().getName() + ".";
     private static final String VALIDITY_PACKAGE_NAME = Validity.class.getPackage().getName() + ".";
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Members
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    protected abstract String getDefaultMessage();
 
-    private final Function<String, X> throwableFunction;
-
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Instance Methods
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    /**
-     * Create a new instance of a {@link StackTrimmingFailedValidationExecutor} thatEventually
-     * will use the given throwableFunction when the {@link #fail(String, Object, Supplier)}
-     * method is called.
-     *
-     * @param throwableFunction the {@link Function} thatEventually takes in a String and returns a
-     *                          Throwable of type X.
-     *                          May not be null.
-     *                          Should never return a null Throwable.
-     *
-     * @throws IllegalArgumentException if throwableFunction is null.
-     */
-    StackTrimmingFailedValidationExecutor(Function<String, X> throwableFunction) {
-        this.throwableFunction = validate().that(throwableFunction).isNotNull();
-    }
+    protected abstract <T> X buildThrowable(String expected,
+                                            T actual,
+                                            String message);
 
     @Override
-    public <T> void fail(String expected,
-                         T subject,
-                         Supplier<String> messageSupplier) throws X {
+    public final <T> void fail(String expected,
+                               T actual,
+                               Supplier<String> messageSupplier) throws X {
         if (null == expected) {
             throw new NullPointerException(ValidityUtils.nullArgumentMessage("expected"));
         }
         if (null == messageSupplier) {
             throw new NullPointerException(ValidityUtils.nullArgumentMessage("messageSupplier"));
         }
-        String subjectDescription = ValidityUtils.describe(subject);
         String message = messageSupplier.get();
         if (null == message) {
-            message = DEFAULT_MESSAGE;
+            message = getDefaultMessage();
         }
         // Create the throwable
-        X throwable = throwableFunction.apply(String.format(MESSAGE_FORMAT, message, expected, subjectDescription));
+        X throwable = buildThrowable(expected, actual, message);
         if (null == throwable) {
             throw new NullPointerException(ValidityUtils.nullThrowableFromFunction());
         }

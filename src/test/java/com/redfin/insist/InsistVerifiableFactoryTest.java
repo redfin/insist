@@ -32,7 +32,7 @@ final class InsistVerifiableFactoryTest {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     private InsistVerifiableFactory<AssertionFailedError> getInstance(Supplier<String> messageSupplier) {
-        return getInstance(messageSupplier, new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new));
+        return getInstance(messageSupplier, new AssertionFailedValidationExecutor());
     }
 
     private InsistVerifiableFactory<AssertionFailedError> getInstance(Supplier<String> messageSupplier,
@@ -68,7 +68,7 @@ final class InsistVerifiableFactoryTest {
     @Test
     void testGetFactoryReturnsANonNullInstance() {
         Assertions.assertNotNull(getInstance(() -> "message").getFactory(() -> "newMessage",
-                                                                   new StackTrimmingFailedValidationExecutor<>(AssertionFailedError::new)),
+                                                                   new AssertionFailedValidationExecutor()),
                                  "InsistVerifiableFactory getFactory should return a non-null instance.");
     }
 

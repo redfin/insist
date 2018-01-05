@@ -20,7 +20,7 @@ To install, you can simply include the dependency from Maven Central:
 <dependency>
     <groupId>com.redfin</groupId>
     <artifactId>insist</artifactId>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -102,3 +102,5 @@ until either a `true` value is received or until the Duration of 1 minute is rea
 is reached than an assertion failure is thrown.
 Note that it might stop before 1 minute has been reached if it had a failed attempt and waiting for 500 milliseconds
 would put it after the requested timeout as per the Patience library.
+Also note that it does not interrupt the retrieval of a boolean from the `thatEventually(BooleanSupplier)` so
+if the code you are checking hangs it will hang as well or could take longer than the given duration and be successful.
