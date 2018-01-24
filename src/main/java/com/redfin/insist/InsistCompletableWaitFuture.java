@@ -19,12 +19,13 @@ package com.redfin.insist;
 import java.time.Duration;
 
 /**
- * An InsistCompletableFuture represents the final mid point in patient
- * validation for waiting until a true result is returned.
+ * An InsistCompletableWaitFuture represents the final mid point in patient
+ * validation for waiting until a true result is returned. This type will
+ * keep trying up to some timeout.
  *
  * @param <X> the type of Throwable thrown if validation never succeeds.
  */
-public interface InsistCompletableFuture<X extends Throwable>
+public interface InsistCompletableWaitFuture<X extends Throwable>
          extends InsistFuture<X> {
 
     /**

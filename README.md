@@ -20,7 +20,7 @@ To install, you can simply include the dependency from Maven Central:
 <dependency>
     <groupId>com.redfin</groupId>
     <artifactId>insist</artifactId>
-    <version>4.0.0</version>
+    <version>4.1.0</version>
 </dependency>
 ```
 
@@ -90,17 +90,26 @@ an error or exception will be thrown the same as above.
 
 ```java
 @Test
-public void testEventualAsserts() {
+public void testEventualAssertsWithWait() {
     withMessage("The value never became true").asserts()
                                               .within(Duration.ofMinutes(1))
                                               .thatEventually(() -> someBooleanSupplier.get());
 }
+
+@Test
+public void testEventualAssertsWithRetry() {
+    withMessage("The value never became true").asserts()
+                                              .within(2)
+                                              .thatEventually(() -> someBooleanSupplier.get());
+}
 ```
 
-in the above example, the method `someBooleanSupplier.get()` will be called every 500 milliseconds (the default)
+in the above wait example, the method `someBooleanSupplier.get()` will be called every 500 milliseconds (the default)
 until either a `true` value is received or until the Duration of 1 minute is reached. If the timeout
 is reached than an assertion failure is thrown.
 Note that it might stop before 1 minute has been reached if it had a failed attempt and waiting for 500 milliseconds
 would put it after the requested timeout as per the Patience library.
 Also note that it does not interrupt the retrieval of a boolean from the `thatEventually(BooleanSupplier)` so
 if the code you are checking hangs it will hang as well or could take longer than the given duration and be successful.
+In the retry version, it will try up to the number of retries plus the initial attempt. So in the above retry if the
+boolean supplier always returns false, it will execute the supplier 3 times before throwing an assertion error.

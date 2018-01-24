@@ -21,7 +21,7 @@ package com.redfin.insist;
  * returning a value and can throw any type of throwable.
  */
 @FunctionalInterface
-public interface Executable<X extends Throwable> {
+public interface InsistExecutable<X extends Throwable> {
 
     /**
      * Run the given block of code.

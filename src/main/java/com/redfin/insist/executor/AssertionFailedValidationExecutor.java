@@ -14,33 +14,35 @@
  * limitations under the License.
  */
 
-package com.redfin.insist;
+package com.redfin.insist.executor;
 
 import com.redfin.validity.ValidityUtils;
-import org.opentest4j.TestAbortedException;
+import org.opentest4j.AssertionFailedError;
 
 /**
  * Concrete subclass of the {@link AbstractStackTrimmingFailedValidationExecutor} that
- * throws {@link TestAbortedException} exceptions upon failure.
+ * throws {@link AssertionFailedError} errors upon failure.
  */
-public final class AbortedFailedValidationExecutor
-           extends AbstractStackTrimmingFailedValidationExecutor<TestAbortedException> {
+public final class AssertionFailedValidationExecutor
+           extends AbstractStackTrimmingFailedValidationExecutor<AssertionFailedError> {
 
     @Override
     protected String getDefaultMessage() {
-        return "Test aborted";
+        return "Assertion failure";
     }
 
     @Override
-    protected <T> TestAbortedException buildThrowable(String expected,
+    protected <T> AssertionFailedError buildThrowable(String expected,
                                                       T actual,
                                                       String message) {
         if (null == expected) {
             throw new NullPointerException(ValidityUtils.nullArgumentMessage("expected"));
         }
-        return new TestAbortedException(String.format("%s\n  expected : %s\n    actual : <%s>",
-                                                      message,
-                                                      expected,
-                                                      ValidityUtils.describe(actual)));
+        if (null == message) {
+            throw new NullPointerException(ValidityUtils.nullArgumentMessage("message"));
+        }
+        return new AssertionFailedError(message,
+                                        expected,
+                                        actual);
     }
 }

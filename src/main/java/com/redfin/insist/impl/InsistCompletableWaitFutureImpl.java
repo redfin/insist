@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package com.redfin.insist;
+package com.redfin.insist.impl;
 
-import com.redfin.patience.PatientTimeoutException;
+import com.redfin.insist.InsistCompletableWaitFuture;
+import com.redfin.insist.InsistExecutable;
+import com.redfin.insist.InsistFuture;
 import com.redfin.patience.PatientWait;
+import com.redfin.patience.exceptions.PatientTimeoutException;
 import com.redfin.validity.FailedValidationExecutor;
 
 import java.time.Duration;
@@ -27,12 +30,14 @@ import java.util.function.Supplier;
 import static com.redfin.validity.Validity.validate;
 
 /**
- * Implementation of the {@link InsistCompletableFuture} interface.
+ * Implementation of the {@link InsistCompletableWaitFuture} interface that uses
+ * the {@link PatientWait} class to wait for conditions.
  *
  * @param <X> the type of Throwable to be thrown if validation doesn't succeed in time.
  */
-final class InsistCompletableFutureImpl<X extends Throwable>
- implements InsistCompletableFuture<X> {
+final class InsistCompletableWaitFutureImpl<X extends Throwable>
+    extends AbstractFutureImpl<X>
+ implements InsistCompletableWaitFuture<X> {
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Constants
@@ -52,18 +57,20 @@ final class InsistCompletableFutureImpl<X extends Throwable>
     private Duration timeout;
 
     /**
-     * Create a new InsistCompletableFutureImpl instance with the given arguments.
+     * Create a new {@link InsistCompletableWaitFutureImpl} instance with the given arguments.
      *
-     * @param messageSupplier   the {@link Supplier} of the String message prefix if validation fails.
-     *                          May not be null.
-     * @param wait              the {@link com.redfin.patience.PatientWait} to use if waiting for validation to succeed.
-     *                          May not be null.
+     * @param messageSupplier          the {@link Supplier} of the String message prefix if validation fails.
+     *                                 May not be null.
+     * @param failedValidationExecutor the {@link FailedValidationExecutor} to be used if the attempt fails.
+     *                                 May not be null.
+     * @param wait                     the {@link PatientWait} to use while waiting for validation to succeed.
+     *                                 May not be null.
      *
-     * @throws IllegalArgumentException if throwableFunction, messageSupplier, or wait are null.
+     * @throws IllegalArgumentException if any argument is null.
      */
-    InsistCompletableFutureImpl(Supplier<String> messageSupplier,
-                                FailedValidationExecutor<X> failedValidationExecutor,
-                                PatientWait wait) {
+    InsistCompletableWaitFutureImpl(Supplier<String> messageSupplier,
+                                    FailedValidationExecutor<X> failedValidationExecutor,
+                                    PatientWait wait) {
         this.messageSupplier = validate().that(messageSupplier).isNotNull();
         this.failedValidationExecutor = validate().that(failedValidationExecutor).isNotNull();
         this.wait = validate().that(wait).isNotNull();
@@ -88,37 +95,25 @@ final class InsistCompletableFutureImpl<X extends Throwable>
             // Failure
             failedValidationExecutor.fail("Eventually true",
                                           "always false",
-                                          fail(messageSupplier, exception.getAttemptsCount()));
+                                          fail(messageSupplier, exception.getFailedAttemptsCount()));
         }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Throwable> T thatEventuallyThrows(Class<T> expectedThrowableClass,
-                                                        Executable<?> executable) throws X {
+                                                        InsistExecutable<T> executable) throws X {
         validate().that(expectedThrowableClass).isNotNull();
         validate().that(executable).isNotNull();
         T caught = null;
         try {
-            caught = wait.from(() -> {
-                try {
-                    executable.execute();
-                    // No throwable seen, return null
-                    return null;
-                } catch (Throwable thrown) {
-                    // Throwable, check if it is the expected one
-                    if (expectedThrowableClass.isAssignableFrom(thrown.getClass())) {
-                        return (T) thrown;
-                    } else {
-                        return null;
-                    }
-                }
-            }).get(timeout);
+            caught = wait.from(getEventuallyThrowsExecutable(expectedThrowableClass, executable))
+                         .get(timeout);
         } catch (PatientTimeoutException exception) {
             // Failure
             failedValidationExecutor.fail("Expected to catch throwable '" + expectedThrowableClass.getName() + "'",
                                           "not caught",
-                                          fail(messageSupplier, exception.getAttemptsCount()));
+                                          fail(messageSupplier, exception.getFailedAttemptsCount()));
         }
         return caught;
     }

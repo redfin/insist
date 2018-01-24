@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-package com.redfin.insist;
+package com.redfin.insist.impl;
 
+import com.redfin.insist.InsistCompletableRetryFuture;
+import com.redfin.insist.InsistCompletableWaitFuture;
+import com.redfin.insist.InsistExecutable;
+import com.redfin.insist.InsistFuture;
+import com.redfin.patience.DelaySuppliers;
 import com.redfin.patience.PatientExecutionHandlers;
-import com.redfin.patience.PatientRetryHandlers;
+import com.redfin.patience.PatientRetry;
 import com.redfin.patience.PatientWait;
 import com.redfin.validity.AbstractVerifiableFactory;
 import com.redfin.validity.FailedValidationExecutor;
@@ -46,8 +51,15 @@ public final class InsistVerifiableFactory<X extends Throwable>
                                                                .withInitialDelay(Duration.ZERO)
                                                                .withDefaultTimeout(Duration.ZERO)
                                                                .withExecutionHandler(PatientExecutionHandlers.ignoringAll())
-                                                               .withRetryHandler(PatientRetryHandlers.fixedDelay(Duration.ofMillis(500)))
+                                                               .withDelaySupplier(DelaySuppliers.fixed(Duration.ofMillis(500)))
                                                                .build();
+
+    private static final PatientRetry DEFAULT_RETRY = PatientRetry.builder()
+                                                                  .withInitialDelay(Duration.ZERO)
+                                                                  .withDefaultNumberOfRetries(0)
+                                                                  .withExecutionHandler(PatientExecutionHandlers.ignoringAll())
+                                                                  .withDelaySupplier(DelaySuppliers.fixed(Duration.ofMillis(500)))
+                                                                  .build();
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Instance Fields & Methods
@@ -66,8 +78,8 @@ public final class InsistVerifiableFactory<X extends Throwable>
      *
      * @throws NullPointerException if throwableFunction or failedValidationExecutor are null.
      */
-    InsistVerifiableFactory(Supplier<String> messageSupplier,
-                            FailedValidationExecutor<X> failedValidationExecutor) {
+    public InsistVerifiableFactory(Supplier<String> messageSupplier,
+                                   FailedValidationExecutor<X> failedValidationExecutor) {
         super(messageSupplier, failedValidationExecutor);
         this.failedValidationExecutor = Objects.requireNonNull(failedValidationExecutor);
     }
@@ -82,13 +94,13 @@ public final class InsistVerifiableFactory<X extends Throwable>
     /**
      * @param wait the {@link PatientWait} object to be used to wait for successful validation.
      *
-     * @return an InsistCompletableFuture instance initialized with the given wait object.
+     * @return an {@link InsistCompletableWaitFuture} instance initialized with the given wait object.
      *
      * @throws IllegalArgumentException if wait is null.
      */
-    public InsistCompletableFuture<X> withWait(PatientWait wait) {
+    public InsistCompletableWaitFuture<X> withWait(PatientWait wait) {
         validate().that(wait).isNotNull();
-        return new InsistCompletableFutureImpl<>(getMessageSupplier(), failedValidationExecutor, wait);
+        return new InsistCompletableWaitFutureImpl<>(getMessageSupplier(), failedValidationExecutor, wait);
     }
 
     /**
@@ -99,10 +111,10 @@ public final class InsistVerifiableFactory<X extends Throwable>
      * successive attempts to get a true value.
      *
      * @param tryingFor the {@link Duration} object to be used as the maximum
-     *                  time to wait.
+     *                  time to wait. A duration of zero means to try only once.
      *                  May not be null or negative.
      *
-     * @return an InsistCompletableFuture instance initialized with the default wait object
+     * @return an {@link InsistFuture} instance initialized with the default wait object
      * and the given timeout.
      *
      * @throws IllegalArgumentException if tryingFor is null or negative.
@@ -110,6 +122,37 @@ public final class InsistVerifiableFactory<X extends Throwable>
     public InsistFuture<X> within(Duration tryingFor) {
         validate().that(tryingFor).isAtLeast(Duration.ZERO);
         return withWait(DEFAULT_WAIT).within(tryingFor);
+    }
+
+    /**
+     * @param retry the {@link PatientRetry} object to be used to wait for successful validation.
+     *
+     * @return an {@link InsistCompletableRetryFuture} instance initialized with the given retry object.
+     *
+     * @throws IllegalArgumentException if retry is null.
+     */
+    public InsistCompletableRetryFuture<X> withRetry(PatientRetry retry) {
+        validate().that(retry).isNotNull();
+        return new InsistCompletableRetryFutureImpl<>(getMessageSupplier(), failedValidationExecutor, retry);
+    }
+
+    /**
+     * Like calling {@link #withRetry(PatientRetry)} with a retry object that retries
+     * repeatedly up to the set number of attempts. Any throwable thrown during the
+     * execution will be ignored.
+     *
+     * @param numRetries the maximum number of attempts to keep trying to get a successful result.
+     *                   A value of zero means to try only once.
+     *                   May not be negative.
+     *
+     * @return an {@link InsistFuture} instance initialized with the default retry object
+     * and the given number of retries.
+     *
+     * @throws IllegalArgumentException if int numAttempts is negative or zero.
+     */
+    public InsistFuture<X> within(int numRetries) {
+        validate().that(numRetries).isAtLeast(0);
+        return withRetry(DEFAULT_RETRY).within(numRetries);
     }
 
     /**
@@ -129,9 +172,9 @@ public final class InsistVerifiableFactory<X extends Throwable>
      * @throws IllegalArgumentException if expectedThrowableClass or executable are null.
      */
     public <T extends Throwable> T thatThrows(Class<T> expectedThrowableClass,
-                                              Executable<T> executable) throws X {
+                                              InsistExecutable<T> executable) throws X {
         validate().that(expectedThrowableClass).isNotNull();
         validate().that(executable).isNotNull();
-        return withWait(PatientWait.builder().build()).thatEventuallyThrows(expectedThrowableClass, executable);
+        return within(0).thatEventuallyThrows(expectedThrowableClass, executable);
     }
 }

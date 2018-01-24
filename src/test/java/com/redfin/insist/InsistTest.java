@@ -16,11 +16,10 @@
 
 package com.redfin.insist;
 
-import com.redfin.validity.AbstractVerifiableFactory;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.opentest4j.AssertionFailedError;
-import org.opentest4j.TestAbortedException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -30,129 +29,156 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
+@DisplayName("The Insist class")
 final class InsistTest {
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Test cases
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    @Test
-    void testInsistAssumesReturnsNonNullFactory() {
-        Assertions.assertNotNull(Insist.assumes(),
-                                 "Insist.assumes() should return a non-null factory.");
+    @Nested
+    @DisplayName("when asserts() is called")
+    final class AssertsTests {
+
+        @Test
+        @DisplayName("returns a non-null validation factory")
+        void testReturnsNonNull() {
+            Assertions.assertNotNull(Insist.asserts(),
+                                     "Should return a non-null validation factory for asserts()");
+        }
+
+        @Test
+        @DisplayName("returns the same instance each time")
+        void testReturnsSameInstance() {
+            Assertions.assertSame(Insist.asserts(),
+                                  Insist.asserts(),
+                                  "Each call to asserts() should return the same instance.");
+        }
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void testInsistAssumesReturnsNullMessageFactory() throws Exception {
-        AbstractVerifiableFactory<?, ?> factory = Insist.assumes();
-        Field field = factory.getClass().getSuperclass().getDeclaredField("messageSupplier");
-        field.setAccessible(true);
-        Assertions.assertNull(((Supplier<String>) field.get(factory)).get(),
-                              "Insist.assumes() should return a factory with a null message.");
+    @Nested
+    @DisplayName("when assumes() is called")
+    final class AssumesTests {
+
+        @Test
+        @DisplayName("returns a non-null validation factory")
+        void testReturnsNonNull() {
+            Assertions.assertNotNull(Insist.assumes(),
+                                     "Should return a non-null validation factory for assumes()");
+        }
+
+        @Test
+        @DisplayName("returns the same instance each time")
+        void testReturnsSameInstance() {
+            Assertions.assertSame(Insist.assumes(),
+                                  Insist.assumes(),
+                                  "Each call to assumes() should return the same instance.");
+        }
     }
 
-    @Test
-    void testInsistAssertsReturnsNonNullFactory() {
-        Assertions.assertNotNull(Insist.asserts(),
-                                 "Insist.asserts() should return a non-null factory.");
-    }
+    @Nested
+    @DisplayName("is not instantiable and")
+    final class NonInstantiableTests {
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void testInsistAssertsReturnsNullMessageFactory() throws Exception {
-        AbstractVerifiableFactory<?, ?> factory = Insist.asserts();
-        Field field = factory.getClass().getSuperclass().getDeclaredField("messageSupplier");
-        field.setAccessible(true);
-        Assertions.assertNull(((Supplier<String>) field.get(factory)).get(),
-                              "Insist.asserts() should return a factory with a null message.");
-    }
+        @Test
+        @DisplayName("is marked as final")
+        void testClassIsMarkedAsFinal() {
+            Assertions.assertTrue(Modifier.isFinal(Insist.class.getModifiers()),
+                                  "A non instantiable class should be marked as final.");
+        }
 
-    @Test
-    void testInsistIsMarkedAsFinal() {
-        Assertions.assertTrue(Modifier.isFinal(Insist.class.getModifiers()),
-                              "The Insist class should be marked as final");
-    }
+        @Test
+        @DisplayName("has only Object as a super class")
+        void testClassExtendsObject() {
+            Assertions.assertEquals(Object.class,
+                                    Insist.class.getSuperclass(),
+                                    "A non instantiable class should only extend Object.");
+        }
 
-    @Test
-    void testInsistHasOnlyOneConstructor() {
-        Assertions.assertTrue(Insist.class.getDeclaredConstructors().length == 1,
-                              "The Insist class should only have 1 constructor");
-    }
+        @Test
+        @DisplayName("does not implement any interfaces")
+        void testClassDoesNotImplementInterfaces() {
+            Assertions.assertEquals(0,
+                                    Insist.class.getInterfaces().length,
+                                    "A non instantiable class should not implement any interfaces.");
+        }
 
-    @Test
-    void testInsistHasTheZeroArgumentConstructor() throws NoSuchMethodException {
-        Assertions.assertTrue(null != Insist.class.getDeclaredConstructor(),
-                              "The Insist class should have a zero argument constructor");
-    }
-
-    @Test
-    void testInsistSingleConstructorIsPrivate() throws NoSuchMethodException {
-        Assertions.assertTrue(Modifier.isPrivate(Insist.class.getDeclaredConstructor().getModifiers()),
-                              "The Insist class should have a private zero argument constructor");
-    }
-
-    @Test
-    void testInsistThrowsAssertionErrorIfConstructorIsCalled() throws NoSuchMethodException {
-        Predicate<Constructor<?>> predicate = constructor -> {
-            Throwable thrown = null;
-            try {
-                constructor.setAccessible(true);
-                constructor.newInstance();
-            } catch (Throwable t) {
-                thrown = t;
+        @Test
+        @DisplayName("has only static fields")
+        void testClassOnlyHasStaticMembers() {
+            List<Field> fields = new ArrayList<>();
+            Class<?> clazz = Insist.class;
+            while (clazz != Object.class) {
+                fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+                clazz = clazz.getSuperclass();
             }
-            return null != thrown &&
-                   thrown instanceof InvocationTargetException &&
-                   null != thrown.getCause() &&
-                   thrown.getCause() instanceof AssertionError;
-        };
-        Assertions.assertTrue(predicate.test(Insist.class.getDeclaredConstructor()),
-                              "The Insist class should throw an AssertionError if the private constructor is called via reflection");
-    }
-
-    @Test
-    void testClassOnlyHasStaticMembers() {
-        List<Field> fields = new ArrayList<>();
-        Class<?> clazz = Insist.class;
-        while (clazz != Object.class) {
-            fields.addAll(Arrays.asList(Insist.class.getDeclaredFields()));
-            clazz = clazz.getSuperclass();
+            Assertions.assertAll("All fields of a non-instantiable class should be static",
+                                 fields.stream()
+                                       .map(field -> () -> Assertions.assertTrue(Modifier.isStatic(field.getModifiers()),
+                                                                                 "field [" + field.getName() + "] should be static")));
         }
-        Assertions.assertAll("All fields of a non-instantiable class should be static",
-                             fields.stream()
-                                   .map(field -> () -> Assertions.assertTrue(Modifier.isStatic(field.getModifiers()),
-                                                                             String.format("field [%s] should be static", field.getName()))));
-    }
 
-    @Test
-    void testClassOnlyHasStaticMethods() {
-        List<Method> methods = new ArrayList<>();
-        Class<?> clazz = Insist.class;
-        while (clazz != Object.class) {
-            methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
-            clazz = clazz.getSuperclass();
+        @Test
+        @DisplayName("has only static methods")
+        void testClassOnlyHasStaticMethods() {
+            List<Method> methods = new ArrayList<>();
+            Class<?> clazz = Insist.class;
+            while (clazz != Object.class) {
+                methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+                clazz = clazz.getSuperclass();
+            }
+            Assertions.assertAll("All methods of a non-instantiable class should be static",
+                                 methods.stream()
+                                        .map(method -> () -> Assertions.assertTrue(Modifier.isStatic(method.getModifiers()),
+                                                                                   "method [" + method.getName() + "] should be static")));
         }
-        Assertions.assertAll("All methods of a non-instantiable class should be static",
-                             methods.stream()
-                                    .map(method -> () -> Assertions.assertTrue(Modifier.isStatic(method.getModifiers()),
-                                                                               String.format("method [%s] should be static", method.getName()))));
-    }
 
-    @Test
-    void testAssertFailureThrowsAssertFailure() {
-        Assertions.assertThrows(AssertionFailedError.class,
-                                () -> Insist.asserts().that(true).isFalse(),
-                                "An assert failure should throw a TestSkippedException.");
-    }
+        @Nested
+        @DisplayName("has a declared constructor")
+        final class ConstructorTests {
 
-    @Test
-    void testAssumeFailureThrowsSkipException() {
-        Assertions.assertThrows(TestAbortedException.class,
-                                () -> Insist.assumes().that(true).isFalse(),
-                                "An assumes failure should throw a TestAbortedException.");
+            @Test
+            @DisplayName("but only a single one")
+            void testClassHasOnlyOneConstructor() {
+                Assertions.assertEquals(1,
+                                        Insist.class.getDeclaredConstructors().length,
+                                        "A non instantiable class should only have 1 constructor.");
+            }
+
+            @Test
+            @DisplayName("that takes in no arguments")
+            void testClassHasTheZeroArgumentConstructor() throws NoSuchMethodException {
+                Assertions.assertNotNull(Insist.class.getDeclaredConstructor(),
+                                         "A non instantiable class should have a declared zero argument constructor.");
+            }
+
+            @Test
+            @DisplayName("that is marked as private")
+            void testClassSingleConstructorIsPrivate() throws NoSuchMethodException {
+                Assertions.assertTrue(Modifier.isPrivate(Insist.class.getDeclaredConstructor().getModifiers()),
+                                      "A non instantiable class should have it's declared zero argument constructor be private.");
+            }
+
+            @Test
+            @DisplayName("that throws an error if called via reflection")
+            void testClassThrowsAssertionErrorIfConstructorIsCalled() throws NoSuchMethodException {
+                Constructor constructor = Insist.class.getDeclaredConstructor();
+                Assertions.assertTrue(() -> {
+                                          Throwable thrown = null;
+                                          try {
+                                              constructor.setAccessible(true);
+                                              constructor.newInstance();
+                                          } catch (Throwable t) {
+                                              thrown = t;
+                                          }
+                                          return null != thrown &&
+                                                 thrown instanceof InvocationTargetException &&
+                                                 null != thrown.getCause() &&
+                                                 thrown.getCause() instanceof AssertionError;
+                                      },
+                                      "A non instantiable class should throw an AssertionError if the private constructor is called via reflection");
+            }
+        }
     }
 }

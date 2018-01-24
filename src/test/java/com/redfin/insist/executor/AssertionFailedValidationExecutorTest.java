@@ -14,26 +14,31 @@
  * limitations under the License.
  */
 
-package com.redfin.insist;
+package com.redfin.insist.executor;
 
-import com.redfin.validity.FailedValidationExecutor;
+import org.junit.jupiter.api.DisplayName;
 import org.opentest4j.AssertionFailedError;
 
+@DisplayName("An AssertionFailedValidationExecutor")
 final class AssertionFailedValidationExecutorTest
- implements StackTrimmingFailedValidationExecutorContract<AssertionFailedError, AssertionFailedValidationExecutor> {
+    extends AbstractStackTrimmingFailedValidationExecutorTest<AssertionFailedError, AssertionFailedValidationExecutor> {
+
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Test constants, requirements, and helpers
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     @Override
-    public AssertionFailedValidationExecutor getStackTrimmingFailedValidationExecutor() {
+    AssertionFailedValidationExecutor getInstance() {
         return new AssertionFailedValidationExecutor();
     }
 
     @Override
-    public FailedValidationExecutor<AssertionFailedError> getFailedValidationExecutor() {
-        return getStackTrimmingFailedValidationExecutor();
+    Class<AssertionFailedValidationExecutor> getInstanceClass() {
+        return AssertionFailedValidationExecutor.class;
     }
 
     @Override
-    public Class<AssertionFailedError> getThrowableClass() {
+    Class<AssertionFailedError> getExpectedThrowableClass() {
         return AssertionFailedError.class;
     }
 }

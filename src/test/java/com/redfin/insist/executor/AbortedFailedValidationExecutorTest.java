@@ -14,26 +14,31 @@
  * limitations under the License.
  */
 
-package com.redfin.insist;
+package com.redfin.insist.executor;
 
-import com.redfin.validity.FailedValidationExecutor;
+import org.junit.jupiter.api.DisplayName;
 import org.opentest4j.TestAbortedException;
 
+@DisplayName("An AbortedFailedValidationExecutor")
 final class AbortedFailedValidationExecutorTest
- implements StackTrimmingFailedValidationExecutorContract<TestAbortedException, AbortedFailedValidationExecutor> {
+    extends AbstractStackTrimmingFailedValidationExecutorTest<TestAbortedException, AbortedFailedValidationExecutor> {
+
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Test constants, requirements, and helpers
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     @Override
-    public AbortedFailedValidationExecutor getStackTrimmingFailedValidationExecutor() {
+    AbortedFailedValidationExecutor getInstance() {
         return new AbortedFailedValidationExecutor();
     }
 
     @Override
-    public FailedValidationExecutor<TestAbortedException> getFailedValidationExecutor() {
-        return getStackTrimmingFailedValidationExecutor();
+    Class<AbortedFailedValidationExecutor> getInstanceClass() {
+        return AbortedFailedValidationExecutor.class;
     }
 
     @Override
-    public Class<TestAbortedException> getThrowableClass() {
+    Class<TestAbortedException> getExpectedThrowableClass() {
         return TestAbortedException.class;
     }
 }

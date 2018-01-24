@@ -27,10 +27,10 @@ import java.util.function.BooleanSupplier;
 public interface InsistFuture<X extends Throwable> {
 
     /**
-     * Repeatedly call the boolean supplier at the rate of the set wait
-     * for this instance. If the supplier returns true, then exit normally.
-     * If true is never received from the supplier within the set timeout
-     * for this instance, then throw a throwable of type X.
+     * Repeatedly call the boolean supplier as defined by the wait or retry
+     * implementation of this instance. If the supplier returns true, then exit
+     * normally. If true is never received from the supplier within the set time
+     * or number of iterations for this instance, then throw a throwable of type X.
      *
      * @param supplier the supplier of boolean values for validation attempts.
      *                 May not be null.
@@ -42,11 +42,10 @@ public interface InsistFuture<X extends Throwable> {
     void thatEventually(BooleanSupplier supplier) throws X;
 
     /**
-     * Repeatedly call the executable at the rate of the set wait
-     * for this instance. If the executable throws a throwable of type T,
-     * then exit normally. If a different type of throwable is thrown, it will
-     * be ignored. If no throwable of type T is thrown within the set timeout,
-     * then throw a throwable of type X.
+     * Repeatedly call the executable as defined by the wait or retry
+     * implementation of this instance. If the executable throws a throwable of type T,
+     * then exit normally. If a different type of throwable, or no throwable at all is thrown,
+     * within the given timeout or number of retries then throw a throwable of type X.
      *
      * @param expectedThrowableClass the class of throwable that is expected.
      *                               May not be null.
@@ -60,5 +59,5 @@ public interface InsistFuture<X extends Throwable> {
      * @throws IllegalArgumentException if expectedThrowableClass or executable are null.
      */
     <T extends Throwable> T thatEventuallyThrows(Class<T> expectedThrowableClass,
-                                                 Executable<?> executable) throws X;
+                                                 InsistExecutable<T> executable) throws X;
 }

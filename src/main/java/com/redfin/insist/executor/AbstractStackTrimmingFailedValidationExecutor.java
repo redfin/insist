@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.redfin.insist;
+package com.redfin.insist.executor;
 
+import com.redfin.insist.Insist;
 import com.redfin.validity.FailedValidationExecutor;
 import com.redfin.validity.Validity;
 import com.redfin.validity.ValidityUtils;
@@ -32,11 +33,27 @@ import java.util.function.Supplier;
 public abstract class AbstractStackTrimmingFailedValidationExecutor<X extends Throwable>
            implements FailedValidationExecutor<X> {
 
-    private static final String PACKAGE_NAME = AssertionFailedValidationExecutor.class.getPackage().getName() + ".";
+    private static final String INSIST_PACKAGE_NAME = Insist.class.getPackage().getName() + ".";
     private static final String VALIDITY_PACKAGE_NAME = Validity.class.getPackage().getName() + ".";
 
+    /**
+     * @return the default String message for the validation executor concrete type.
+     */
     protected abstract String getDefaultMessage();
 
+    /**
+     * @param expected the String description of the expected value.
+     *                 May not be null.
+     * @param actual   the actual value.
+     *                 May be null.
+     * @param message  the String message for the throwable to be built.
+     *                 May not be null.
+     * @param <T>      the type of the actual value.
+     *
+     * @return a new Throwable of type X.
+     *
+     * @throws NullPointerException if expected or message are null.
+     */
     protected abstract <T> X buildThrowable(String expected,
                                             T actual,
                                             String message);
@@ -70,7 +87,7 @@ public abstract class AbstractStackTrimmingFailedValidationExecutor<X extends Th
                 // we want to remove any validity or insist stack frames
                 // when locating the caller
                 if (null != element.getClassName()
-                    && (element.getClassName().startsWith(PACKAGE_NAME)
+                    && (element.getClassName().startsWith(INSIST_PACKAGE_NAME)
                         || element.getClassName().startsWith(VALIDITY_PACKAGE_NAME))) {
                     lastIndex = OptionalInt.of(i);
                 }

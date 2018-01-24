@@ -16,6 +16,9 @@
 
 package com.redfin.insist;
 
+import com.redfin.insist.executor.AbortedFailedValidationExecutor;
+import com.redfin.insist.executor.AssertionFailedValidationExecutor;
+import com.redfin.insist.impl.InsistVerifiableFactory;
 import com.redfin.validity.ValidityUtils;
 import org.opentest4j.AssertionFailedError;
 import org.opentest4j.TestAbortedException;

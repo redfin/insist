@@ -19,15 +19,17 @@ package com.redfin.external_package;
 import com.redfin.insist.Insist;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
 /*
  * A separate package is used for this test since the default behavior
- * of the DefaultValidityFailedValidationExecutor supplied in the library
- * trims out lines from inside the Validity package.
+ * of the FailedValidationExecutor supplied in the Insist library
+ * trims out lines from inside the Insist & Validity packages.
  */
 
+@DisplayName("The Insist library")
 final class StackTrimmingTest {
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,6 +45,7 @@ final class StackTrimmingTest {
      */
 
     @Test
+    @DisplayName("trims out all stack trace elements except the calling frame")
     void testStackTrimmingFailedValidationExecutorOnlyLeavesCallingStackFrame() {
         Exception exception = new NullPointerException();
         Assumptions.assumeTrue(null != exception.getStackTrace() && exception.getStackTrace().length > 0,
