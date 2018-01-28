@@ -21,6 +21,7 @@ To install, you can simply include the dependency from Maven Central:
     <groupId>com.redfin</groupId>
     <artifactId>insist</artifactId>
     <version>4.1.0</version>
+    <scope>test</scope>
 </dependency>
 ```
 
