@@ -70,12 +70,12 @@ abstract class AbstractFutureImpl<X extends Throwable>
     }
 
     @Override
-    public void thatEventuallyPresent(Supplier<Optional<?>> supplier) throws X {
+    public void thatEventuallyIsPresent(Supplier<Optional<?>> supplier) throws X {
         this.thatEventually(() -> supplier.get().isPresent());
     }
 
     @Override
-    public void thatEventuallyNotNull(Supplier<?> supplier) throws X {
+    public void thatEventuallyIsNotNull(Supplier<?> supplier) throws X {
         this.thatEventually(() -> supplier.get() != null);
     }
 }

@@ -58,7 +58,7 @@ public interface InsistFuture<X extends Throwable> {
      *                                  period.
      * @throws IllegalArgumentException if supplier is null.
      */
-    void thatEventuallyPresent(Supplier<Optional<?>> supplier) throws X;
+    void thatEventuallyIsPresent(Supplier<Optional<?>> supplier) throws X;
 
     /**
      * Repeatedly call the supplier as defined by the wait or retry implementation
@@ -74,7 +74,7 @@ public interface InsistFuture<X extends Throwable> {
      *                                  value within the given timeout period.
      * @throws IllegalArgumentException if supplier is null.
      */
-    void thatEventuallyNotNull(Supplier<?> supplier) throws X;
+    void thatEventuallyIsNotNull(Supplier<?> supplier) throws X;
 
     /**
      * Repeatedly call the executable as defined by the wait or retry
