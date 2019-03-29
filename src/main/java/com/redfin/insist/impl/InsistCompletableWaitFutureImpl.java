@@ -24,6 +24,7 @@ import com.redfin.patience.exceptions.PatientTimeoutException;
 import com.redfin.validity.FailedValidationExecutor;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 

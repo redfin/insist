@@ -16,7 +16,9 @@
 
 package com.redfin.insist;
 
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 /**
  * An InsistFuture represents the final type in patient
@@ -40,6 +42,39 @@ public interface InsistFuture<X extends Throwable> {
      * @throws IllegalArgumentException if supplier is null.
      */
     void thatEventually(BooleanSupplier supplier) throws X;
+
+    /**
+     * Repeatedly call the Optional supplier as defined by the wait or retry
+     * implementation of this instance. If the supplier returns a non-empty
+     * Optional, then exit normally. If a non-empty Optional is never received
+     * from the supplier within the set time or number of iterations for this
+     * instance, then throw a throwable of type X.
+     *
+     * @param supplier the supplier of Optional values for validation attempts.
+     *                 May not be null.
+     *
+     * @throws X                        if the supplier never supplies a non-empty
+     *                                  Optional value within the given timeout
+     *                                  period.
+     * @throws IllegalArgumentException if supplier is null.
+     */
+    void thatEventuallyPresent(Supplier<Optional<?>> supplier) throws X;
+
+    /**
+     * Repeatedly call the supplier as defined by the wait or retry implementation
+     * of this instance. If the supplier returns a non-null value, then exit
+     * normally. If a non-null object is never received from the supplier within
+     * the set time or number of iterations for this instance, then throw a
+     * throwable of type X.
+     *
+     * @param supplier the supplier of object values for validation attempts.
+     *                 May not be null.
+     *
+     * @throws X                        if the supplier never supplies a non-null
+     *                                  value within the given timeout period.
+     * @throws IllegalArgumentException if supplier is null.
+     */
+    void thatEventuallyNotNull(Supplier<?> supplier) throws X;
 
     /**
      * Repeatedly call the executable as defined by the wait or retry
