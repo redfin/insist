@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 abstract class AbstractFutureTest<T extends AbstractFutureImpl<AssertionFailedError>> {
@@ -97,6 +98,90 @@ abstract class AbstractFutureTest<T extends AbstractFutureImpl<AssertionFailedEr
             Assertions.assertThrows(AssertionFailedError.class,
                                     () -> getInstance(null).thatEventually(() -> false),
                                     "Should throw for a supplier that never returns true.");
+        }
+    }
+
+    @Nested
+    @DisplayName("when thatEventuallyIsPresent(Supplier) is called")
+    final class ThatEventuallyIsPresentTests {
+
+        @Test
+        @DisplayName("throws an exception for a null supplier")
+        void testThrowsExceptionForNullSupplier() {
+            Assertions.assertThrows(IllegalArgumentException.class,
+                                    () -> getInstance(null).thatEventuallyIsPresent(null),
+                                    "Should throw for a null supplier.");
+        }
+
+        @Test
+        @DisplayName("throws the expected exception for a null optional")
+        void testThrowsExpectedExceptionForNullOptional() {
+            Assertions.assertThrows(AssertionFailedError.class,
+                                    () -> getInstance(null).thatEventuallyIsPresent(() -> null),
+                                    "Should throw the expected assertion failure for a null optional from the supplier.");
+        }
+
+        @Test
+        @DisplayName("throws the expected exception for a never present optional")
+        void testThrowsExceptionForNeverPresentOptional() {
+            Assertions.assertThrows(AssertionFailedError.class,
+                                    () -> getInstance(null).thatEventuallyIsPresent(Optional::empty),
+                                    "Should throw the expected assertion failure for a never present optional.");
+        }
+
+        @Test
+        @DisplayName("returns without throwing for an eventually present optional")
+        void testReturnsWithoutThrowingForPresentOptional() {
+            AtomicInteger counter = new AtomicInteger(0);
+            try {
+                getInstance(null).thatEventuallyIsPresent(() -> {
+                    if (counter.getAndIncrement() == 2) {
+                        return Optional.of("hello");
+                    } else {
+                        return Optional.empty();
+                    }
+                });
+            } catch (AssertionError ae) {
+                Assertions.fail("Should not have thrown an assertion for an optional that eventually was present");
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("when thatEventuallyIsNotNull(Supplier) is called")
+    final class ThatEventuallyIsNotNullTests {
+
+        @Test
+        @DisplayName("throws an exception for a null supplier")
+        void testThrowsExceptionForNullSupplier() {
+            Assertions.assertThrows(IllegalArgumentException.class,
+                                    () -> getInstance(null).thatEventuallyIsNotNull(null),
+                                    "Should throw for a null supplier.");
+        }
+
+        @Test
+        @DisplayName("throws the expected exception for a never non-null value")
+        void testThrowsExceptionForNeverNonNullValue() {
+            Assertions.assertThrows(AssertionFailedError.class,
+                                    () -> getInstance(null).thatEventuallyIsNotNull(() -> null),
+                                    "Should throw the expected assertion for an always null value.");
+        }
+
+        @Test
+        @DisplayName("returns without throwing for an eventually non-null value")
+        void testReturnsWithoutThrowingForEventuallyNonNullValue() {
+            AtomicInteger counter = new AtomicInteger(0);
+            try {
+                getInstance(null).thatEventuallyIsNotNull(() -> {
+                    if (counter.getAndIncrement() == 2) {
+                        return "hello";
+                    } else {
+                        return null;
+                    }
+                });
+            } catch (AssertionError ae) {
+                Assertions.fail("Should not have thrown an assertion for an eventually non-null value.");
+            }
         }
     }
 

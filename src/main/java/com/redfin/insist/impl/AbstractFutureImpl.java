@@ -72,11 +72,12 @@ abstract class AbstractFutureImpl<X extends Throwable>
     @Override
     public void thatEventuallyIsPresent(Supplier<Optional<?>> supplier) throws X {
         validate().that(supplier).isNotNull();
-        this.thatEventually(() ->
-                Optional.of(supplier)
-                        .flatMap(Supplier::get)
-                        .isPresent()
-        );
+        this.thatEventually(() -> {
+            // Ideally the returned optional should never be null, but if it is we want to throw the
+            // correct exception as configured by the library, not a null pointer
+            Optional<?> optional = supplier.get();
+            return null != optional && optional.isPresent();
+        });
     }
 
     @Override
