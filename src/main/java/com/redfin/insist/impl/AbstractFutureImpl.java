@@ -20,6 +20,9 @@ import com.redfin.insist.InsistExecutable;
 import com.redfin.insist.InsistFuture;
 import com.redfin.patience.PatientExecutable;
 
+import java.util.Optional;
+import java.util.function.Supplier;
+
 import static com.redfin.validity.Validity.validate;
 
 /**
@@ -64,5 +67,21 @@ abstract class AbstractFutureImpl<X extends Throwable>
                 }
             }
         };
+    }
+
+    @Override
+    public void thatEventuallyIsPresent(Supplier<Optional<?>> supplier) throws X {
+        validate().that(supplier).isNotNull();
+        this.thatEventually(() ->
+                Optional.of(supplier)
+                        .flatMap(Supplier::get)
+                        .isPresent()
+        );
+    }
+
+    @Override
+    public void thatEventuallyIsNotNull(Supplier<?> supplier) throws X {
+        validate().that(supplier).isNotNull();
+        this.thatEventually(() -> supplier.get() != null);
     }
 }
