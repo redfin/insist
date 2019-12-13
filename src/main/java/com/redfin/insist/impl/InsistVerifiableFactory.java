@@ -20,7 +20,7 @@ import com.redfin.insist.InsistCompletableRetryFuture;
 import com.redfin.insist.InsistCompletableWaitFuture;
 import com.redfin.insist.InsistExecutable;
 import com.redfin.insist.InsistFuture;
-import com.redfin.patience.DelaySuppliers;
+import com.redfin.patience.PatientDelaySuppliers;
 import com.redfin.patience.PatientExecutionHandlers;
 import com.redfin.patience.PatientRetry;
 import com.redfin.patience.PatientWait;
@@ -51,14 +51,14 @@ public final class InsistVerifiableFactory<X extends Throwable>
                                                                .withInitialDelay(Duration.ZERO)
                                                                .withDefaultTimeout(Duration.ZERO)
                                                                .withExecutionHandler(PatientExecutionHandlers.ignoringAll())
-                                                               .withDelaySupplier(DelaySuppliers.fixed(Duration.ofMillis(500)))
+                                                               .withDelaySupplier(PatientDelaySuppliers.fixed(Duration.ofMillis(500)))
                                                                .build();
 
     private static final PatientRetry DEFAULT_RETRY = PatientRetry.builder()
                                                                   .withInitialDelay(Duration.ZERO)
                                                                   .withDefaultNumberOfRetries(0)
                                                                   .withExecutionHandler(PatientExecutionHandlers.ignoringAll())
-                                                                  .withDelaySupplier(DelaySuppliers.fixed(Duration.ofMillis(500)))
+                                                                  .withDelaySupplier(PatientDelaySuppliers.fixed(Duration.ofMillis(500)))
                                                                   .build();
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
